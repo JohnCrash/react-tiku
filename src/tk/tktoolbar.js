@@ -16,7 +16,7 @@ class TkToolBar extends Component{
 		return (
 			<Toolbar>
 			<ToolbarGroup>
-              <IconButton tooltip='重新编辑'>
+              <IconButton tooltip='重新编辑' onClick={this.props.toolReset}>
                 <TkReset />
               </IconButton>
 			  <IconButton tooltip='入库'>
