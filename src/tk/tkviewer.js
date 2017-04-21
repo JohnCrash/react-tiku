@@ -23,7 +23,7 @@ class TkViewer extends Component{
 		super()
 		this.state = {data:""}
 		this.setState({data:""});
-		fetch('http://localhost:8888').then(
+		fetch('api/hello').then(
 			function(response){
 				return response.text()
 			}).then(function(data){
