@@ -10,12 +10,17 @@ import TkEdit from 'material-ui/svg-icons/editor/mode-edit';
 import TkEdit2 from 'material-ui/svg-icons/editor/format-align-justify';
 import TkDelete from 'material-ui/svg-icons/content/content-cut';
 import TkTag from 'material-ui/svg-icons/action/find-in-page';
+import TkMoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 
 class TkToolBar extends Component{
 	render(){
 		return (
 			<Toolbar>
 			<ToolbarGroup>
+              <IconButton tooltip='打开菜单' onClick={this.props.toolMenu}>
+                <TkMoreVertIcon />
+              </IconButton>
+              <ToolbarSeparator />
               <IconButton tooltip='重新编辑' onClick={this.props.toolReset}>
                 <TkReset />
               </IconButton>
@@ -34,12 +39,12 @@ class TkToolBar extends Component{
                 <TkEdit />
               </IconButton>			
   			  <IconButton tooltip='标记解答题'>
-                <TkEdit2 />
-              </IconButton>	
+              <TkEdit2 />
+          </IconButton>	
 			  <ToolbarSeparator />
 			  <IconButton tooltip='删除选择'>
-                <TkDelete />
-              </IconButton>				
+          <TkDelete />
+        </IconButton>				
 			</ToolbarGroup>				
 		</Toolbar>
 		);

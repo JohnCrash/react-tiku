@@ -6,8 +6,6 @@ import AppBar from 'material-ui/AppBar';
 class Master extends Component {
     render(){
         <div>
-            <Title render='Material-UI'/>
-            <AppBar/>
         </div>
     }
 };
