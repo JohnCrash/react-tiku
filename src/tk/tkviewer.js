@@ -8,24 +8,13 @@ var topic = '<div><h2>Hello</h2> <RaisedButton label="Primary"></RaisedButton> <
 
 class TkViewer extends Component{
 	constructor(){
-		super()
-		this.state = {data:""}
-		this.setState({data:""});
-		fetch('/book').then(
-			function(response){
-				return response.text()
-			}).then(function(data){
-				this.setState({data:data})
-			}.bind(this)).catch(function(e){
-			    this.setState({data:`<RaisedButton label=\"${e}\"></RaisedButton>`})
-			}.bind(this));
+		super();
 	}
 	render(){
 		return (<div>
 			<br/>
-			{TkParser.htmlElement(this.state.data,[RaisedButton])}
+			{TkParser.htmlElement(this.props.content,[RaisedButton])}
 		</div>);
-	//	return <div>{this.state.data}</div>
 	}
 };
 
