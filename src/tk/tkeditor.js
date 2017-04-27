@@ -58,7 +58,11 @@ class TkEditor extends Component{
 			this.currentUnit = unit;
 			this.curTopicsIndex = unit.length===0?0:1;
 			this.totalTopics = unit.length;
-			this.setState({topicsNumber:`${this.curTopicsIndex}/${this.totalTopics}`});
+			try{
+				this.setState({topicsNumber:`${this.curTopicsIndex}/${this.totalTopics}`});
+			}catch(e){
+				console.log(e.toString());
+			}
 			if(this.curTopicsIndex===1){
 				this.loadTopic(this.currentUnit[this.curTopicsIndex-1].QuestionID);
 			}else{

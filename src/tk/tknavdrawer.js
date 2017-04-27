@@ -57,7 +57,7 @@ class TkNavDrawer extends Component{
     handleNestedListToggle(item){
         if(this.currentModule !== item.props.primaryText){
             this.currentModule = item.props.primaryText;
-            this.setState();
+            this.forceUpdate();
         }
         if(!this.units[item.props.primaryText]){
             let request = `/module?Book=${this.currentBook}&Module=${item.props.primaryText}`;
@@ -66,7 +66,7 @@ class TkNavDrawer extends Component{
             }.bind(this)).then(function(data){
                 this.error = data;
                 this.units[item.props.primaryText] = JSON.parse(data);
-                this.setState();
+                this.forceUpdate();
             }.bind(this)).catch(function(e){
                 //加载出错
                 if(this.error){
@@ -105,7 +105,7 @@ class TkNavDrawer extends Component{
     handleUnitListToggle(item){
         if(this.currentUnit!==item.props.primaryText){
             this.currentUnit = item.props.primaryText;
-            this.setState();
+            this.forceUpdate();
             //回调上一层组件，通知有一个单元选择
             if(this.props.onSelectUnit){
                 let request = `/unit?BookIndex=${item.props.unitJson.BookIndex}`;
