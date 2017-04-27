@@ -40,10 +40,9 @@ class TkFrame extends Component{
             src={this.props.content}/>;
         }
         if(this.props.type==1||this.props.type==2||this.props.type==3){
-            content = <TkViewer content={this.props.content} style={{margin:24}}/>
+          //  content = <TkViewer content={this.props.content} style={{margin:24}}/>
         }
         if(this.props.type==1){
-             
                 tool = [
             <IconButton tooltip='重新编辑' onClick={this.props.toolReset}>
                 <TkReset/>
