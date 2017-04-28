@@ -18,6 +18,8 @@ class TkEditor extends Component{
 			topic:'',
 			answer:'',
 			analysis:'',
+			tag:'',
+			css:'',
 		}
 		this.topics = {
 			text:"hello world"
@@ -34,6 +36,9 @@ class TkEditor extends Component{
 		//打开边栏
 		this.drawer.toggle();
 	}
+	toHtmlDocument(css,body){
+		return `<html><head>${css}</head><body>${body}</body></html>`;
+	}
 	//加载一道题进行编辑
 	loadTopic(QuestionID){
 		fetch(`/topic?QuestionID=${QuestionID}`).then(function(responese){
@@ -41,10 +46,16 @@ class TkEditor extends Component{
 		}).then(function(data){
 			this.error = data;
 			this.currentTopic = JSON.parse(data);
-			this.setState({topic:this.currentTopic.topic_body,
-			answer:this.currentTopic.topic_answer,
-			analysis:this.currentTopic.topic_analysis,
-			image:this.currentTopic.topic_image});
+			
+			let css = this.currentTopic.topic_css;
+
+			this.setState({
+			topic:this.toHtmlDocument(css,this.currentTopic.topic_body),
+			answer:this.toHtmlDocument(css,this.currentTopic.topic_answer),
+			analysis:this.toHtmlDocument(css,this.currentTopic.topic_analysis),
+			image:this.currentTopic.topic_image,
+			css:css,
+			tag:this.currentTopic.topic_tag});
 		}.bind(this)).catch(function(e){
 			if(this.error){
 				this.messageBar(this.error);
@@ -112,6 +123,7 @@ class TkEditor extends Component{
 				<TkFrame title='题目' content={this.state.topic} type={1}/>
 				<TkFrame title='解答' content={this.state.answer} type={2}/>
 				<TkFrame title='分析' content={this.state.analysis} type={3}/>
+				<TkFrame title='知识点' content={this.state.tag} type={4}/>
 				<Snackbar open={this.state.errorOpen} 
                 message={this.state.errorMsg} 
                 autoHideDuration={5000} />

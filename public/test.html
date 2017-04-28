@@ -1,0 +1,18 @@
+<html>
+<head>
+<script>
+function onLoad(){
+	let ifr = document.getElementById('editor');
+	let doc = ifr.contentDocument || ifr.contentWindow.document;
+	doc.designMode="on";
+	doc.contentEditable=true;
+	ifr.height = Number(doc.body.scrollHeight);
+}
+</script>
+</head>
+<body>
+<h2>插入HTML Editor</h2>
+<iframe width = 300 height = 10 id='editor' onload="onLoad()" srcdoc='<html><body><p>Hello World</p></body></html>'>
+</iframe>
+</body>		  
+</html>

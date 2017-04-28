@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Page from 'material-ui/Paper';
 import IconButton from 'material-ui/IconButton';
+import TextField from 'material-ui/TextField';
 import CodeIcon from 'material-ui/svg-icons/action/code';
 import {Toolbar, ToolbarGroup, ToolbarTitle,ToolbarSeparator} from 'material-ui/Toolbar';
 import TkTag from 'material-ui/svg-icons/action/find-in-page';
@@ -24,10 +25,19 @@ class TkFrame extends Component{
 		super();      
 	}
     state={
-        expendHTML:false
+        expendHTML:false,
+        iframeHeight:0,
     };      
     handleHTMLContent(){
         this.setState({expendHTML:!this.state.expendHTML});
+    }
+    handleLoad(){
+        if(this.iframe&&this.iframe.contentDocument&&this.iframe.contentDocument.body){
+            let height = this.iframe.contentDocument.body.scrollHeight;
+            this.setState({iframeHeight:height});
+        }else{
+            this.setState({iframeHeight:0});
+        }
     }
 	render(){
         let tool,topic_image,content;
@@ -35,12 +45,20 @@ class TkFrame extends Component{
             return null;
         }
         if(this.props.type==0){
-            topic_image = <img style={{margin:'auto',
+            topic_image = <p style={{textAlign:'center'}}>
+                <img frameborder={0}
+            style={{margin:'auto',
             width:'60%'}} 
-            src={this.props.content}/>;
+            src={this.props.content}/>
+            </p>;
         }
-        if(this.props.type==1||this.props.type==2||this.props.type==3){
-          //  content = <TkViewer content={this.props.content} style={{margin:24}}/>
+        if(this.props.type>=1 && this.props.type<=3){
+          content = (<iframe onLoad={this.handleLoad.bind(this)}
+          ref = {(iframe)=>{this.iframe = iframe}}
+          height = {this.state.iframeHeight}
+          style={{margin:'auto',width:'100%',border:0}} 
+          srcDoc={this.props.content}>
+          </iframe>);
         }
         if(this.props.type==1){
                 tool = [
@@ -50,10 +68,7 @@ class TkFrame extends Component{
             <IconButton tooltip='入库'>
                 <TkSave/>
             </IconButton>,		
-            <ToolbarSeparator />,                
-            <IconButton tooltip='编辑知识点'>
-                <TkTag/>
-            </IconButton>,			  
+            <ToolbarSeparator />,			  
             <IconButton tooltip='标记选择题'>
                 <TkOption/>
             </IconButton>,
@@ -81,7 +96,7 @@ class TkFrame extends Component{
                 </ToolbarGroup>                
             </Toolbar>
             <TkHtmlViewer expend={this.state.expendHTML}>{this.props.content}</TkHtmlViewer>
-            <p style={{textAlign:'center'}}>{topic_image}</p>
+            {topic_image}
             {content}
 		</Page>);
 	}

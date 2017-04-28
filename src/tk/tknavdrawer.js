@@ -19,6 +19,14 @@ import IconBook from 'material-ui/svg-icons/file/folder';
 import IconUnit from 'material-ui/svg-icons/editor/format-align-justify';
 import 'whatwg-fetch'
 
+/**
+ * 书目边栏
+ * 属性有:
+ * messageBar 一个弹出错误消息的回调
+ * onSelectUnit 当书目被选择了就用该函数通知
+ * 方法:
+ * toggle() 打开或者关闭边栏
+ */
 class TkNavDrawer extends Component{
     constructor(props){
         super(props);
@@ -108,19 +116,35 @@ class TkNavDrawer extends Component{
             this.forceUpdate();
             //回调上一层组件，通知有一个单元选择
             if(this.props.onSelectUnit){
-                let request = `/unit?BookIndex=${item.props.unitJson.BookIndex}`;
-                fetch(request).then(function(response){
-                    return response.text();
-                }).then(function(data){
-                    this.error = data;
-                    this.props.onSelectUnit(JSON.parse(data));
-                }.bind(this)).catch(function(e){
-                    if(this.error){
-                        this.messageBox(this.error);
-                    }else{
-                        this.messageBox(e.toString());
-                    }                    
-                }.bind(this));
+                if(item.props.unitJson.BookIndex){
+                    let request = `/unit?BookIndex=${item.props.unitJson.BookIndex}`;
+                    fetch(request).then(function(response){
+                        return response.text();
+                    }).then(function(data){
+                        this.error = data;
+                        this.props.onSelectUnit(JSON.parse(data));
+                    }.bind(this)).catch(function(e){
+                        if(this.error){
+                            this.messageBox(this.error);
+                        }else{
+                            this.messageBox(e.toString());
+                        }                    
+                    }.bind(this));
+                }else if(item.props.unitJson.UnitBegin!==undefined && item.props.unitJson.UnitEnd!==undefined){
+                    let request = `/unitbyindex?UnitBegin=${item.props.unitJson.UnitBegin}&UnitEnd=${item.props.unitJson.UnitEnd}`;
+                    fetch(request).then(function(response){
+                        return response.text();
+                    }).then(function(data){
+                        this.error = data;
+                        this.props.onSelectUnit(JSON.parse(data));
+                    }.bind(this)).catch(function(e){
+                        if(this.error){
+                            this.messageBox(this.error);
+                        }else{
+                            this.messageBox(e.toString());
+                        }                    
+                    }.bind(this));                    
+                }
             }
         }
     }
