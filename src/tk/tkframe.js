@@ -23,21 +23,35 @@ import TkViewer from './tkviewer';
 class TkFrame extends Component{
 	constructor(){
 		super();      
-	}
-    state={
-        expendHTML:false,
-        iframeHeight:0,
-    };      
+        this.state={
+            expendHTML:false,
+            iframeHeight:0,
+        }; 
+	}     
     handleHTMLContent(){
         this.setState({expendHTML:!this.state.expendHTML});
     }
     handleLoad(){
         if(this.iframe&&this.iframe.contentDocument&&this.iframe.contentDocument.body){
-            let height = this.iframe.contentDocument.body.scrollHeight;
-            this.setState({iframeHeight:height});
+            var id;
+            var body = this.iframe.contentDocument.body;
+            var cb = ()=>{
+                clearInterval(id);
+                let height = 0;
+                for(let i = 0;i<body.children.length;i++){
+                    height += body.children[i].scrollHeight;
+                }
+                this.setState({iframeHeight:height});
+            };
+            cb.bind(this);
+            cb();
+            id = setInterval(cb,100);
         }else{
             this.setState({iframeHeight:0});
         }
+    }
+    handlePopUrl(){
+        window.open(this.props.source);
     }
 	render(){
         let tool,topic_image,content;
@@ -51,12 +65,14 @@ class TkFrame extends Component{
             width:'60%'}} 
             src={this.props.content}/>
             </p>;
+            tool = <a href="javascript:;" onClick={this.handlePopUrl.bind(this)}>{this.props.tid}</a>;
         }
         if(this.props.type>=1 && this.props.type<=3){
-          content = (<iframe onLoad={this.handleLoad.bind(this)}
+          content = (<iframe
+          onLoad={this.handleLoad.bind(this)}
           ref = {(iframe)=>{this.iframe = iframe}}
           height = {this.state.iframeHeight}
-          style={{margin:'auto',width:'100%',border:0}} 
+          style={{width:'100%',border:0}} 
           srcDoc={this.props.content}>
           </iframe>);
         }

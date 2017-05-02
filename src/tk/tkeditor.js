@@ -20,6 +20,8 @@ class TkEditor extends Component{
 			analysis:'',
 			tag:'',
 			css:'',
+			source:'',
+			tid:'',
 		}
 		this.topics = {
 			text:"hello world"
@@ -37,7 +39,14 @@ class TkEditor extends Component{
 		this.drawer.toggle();
 	}
 	toHtmlDocument(css,body){
-		return `<html><head>${css}</head><body>${body}</body></html>`;
+		return `<html>
+		<head>
+			<link rel="stylesheet" type="text/css" href="css/reset.css">
+			<link rel="stylesheet" type="text/css" href="css/style.css">
+			<link rel="stylesheet" type="text/css" href="css/ti.css">
+		</head>
+		<body>${body}</body>
+		</html>`;
 	}
 	//加载一道题进行编辑
 	loadTopic(QuestionID){
@@ -55,7 +64,9 @@ class TkEditor extends Component{
 			analysis:this.toHtmlDocument(css,this.currentTopic.topic_analysis),
 			image:this.currentTopic.topic_image,
 			css:css,
-			tag:this.currentTopic.topic_tag});
+			tag:this.currentTopic.topic_tag,
+			source:this.currentTopic.source,
+			tid:this.currentTopic.tid});
 		}.bind(this)).catch(function(e){
 			if(this.error){
 				this.messageBar(this.error);
@@ -119,7 +130,7 @@ class TkEditor extends Component{
 				<TkNavDrawer ref={(drawer)=>{this.drawer = drawer}} 
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
-				<TkFrame title='原题' content={this.state.image} type={0}/>
+				<TkFrame title='原题' content={this.state.image} source={this.state.source} tid={this.state.tid} type={0}/>
 				<TkFrame title='题目' content={this.state.topic} type={1}/>
 				<TkFrame title='解答' content={this.state.answer} type={2}/>
 				<TkFrame title='分析' content={this.state.analysis} type={3}/>
