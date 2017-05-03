@@ -34,7 +34,8 @@ class TkFrame extends Component{
     handleLoad(){
         if(this.iframe&&this.iframe.contentDocument&&this.iframe.contentDocument.body){
             var id;
-            var body = this.iframe.contentDocument.body;
+            var document = this.iframe.contentDocument;
+            var body = document.body;
             var cb = ()=>{
                 clearInterval(id);
                 let height = 0;
@@ -44,8 +45,17 @@ class TkFrame extends Component{
                 this.setState({iframeHeight:height});
             };
             cb.bind(this);
+            /**
+             * 这里可能还没有计算出布局，因此scrollHeight可能不准确
+             * 如果在100ms秒后再设置一回height将会基本正常。
+             */
             cb();
             id = setInterval(cb,100);
+            /**
+             * 这里打开编辑功能
+             */
+            document.designMode = 'on';
+            document.contentEditable=true;
         }else{
             this.setState({iframeHeight:0});
         }
