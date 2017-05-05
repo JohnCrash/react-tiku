@@ -22,6 +22,7 @@ class TkEditor extends Component{
 			css:'',
 			source:'',
 			tid:'',
+			topicsType:-1,
 		}
 		this.topics = {
 			text:"hello world"
@@ -66,7 +67,8 @@ class TkEditor extends Component{
 			css:css,
 			tag:this.currentTopic.topic_tag,
 			source:this.currentTopic.source,
-			tid:this.currentTopic.tid});
+			tid:this.currentTopic.tid,
+			topicsType:this.currentTopic.state});
 		}.bind(this)).catch(function(e){
 			if(this.error){
 				this.messageBar(this.error);
@@ -131,7 +133,7 @@ class TkEditor extends Component{
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
 				<TkFrame title='原题' content={this.state.image} source={this.state.source} tid={this.state.tid} type={0}/>
-				<TkFrame title='题目' content={this.state.topic} type={1}/>
+				<TkFrame title='题目' content={this.state.topic} type={1} topicsType={this.state.topicsType}/>
 				<TkFrame title='解答' content={this.state.answer} type={2}/>
 				<TkFrame title='分析' content={this.state.analysis} type={3}/>
 				<TkFrame title='知识点' content={this.state.tag} type={4}/>
