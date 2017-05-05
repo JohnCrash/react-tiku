@@ -18,6 +18,23 @@ import TkHtmlViewer from './tkhtmlviewer';
 const checkColor = '#69F0AE';
 const toolbarIconColor = '#616161';
 const warningColor = '#EF9A9A';
+//取得节点的属性，属性名称为attrName
+function getAttribute(node,attrName){
+    for(let i = 0;i < node.attributes.length;i++){
+        if( node.attributes[i].name === attrName){
+            return node.attributes[i];
+        }
+    }
+    return null;
+}
+//遍历全部子节点，查找插入的节点
+function forChildren(node,cb){
+    if(cb(node))return;
+    for(let i=0;i<node.children.length;i++){
+        if(cb(node.children[i]))return;
+        forChildren(node.children[i],cb);
+    }
+}
 /**
  * 具体的html编辑
  * type = (0:image,1:body,2:answer,3:analysis)
@@ -115,8 +132,29 @@ class TkFrame extends Component{
     //将选择的内容转换为交互按键
     handleOptionClick(event){
         let option = event.target.textContent;
-        this.document.execCommand('backcolor',false,'#FF0000');
+        let map1 = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6};
+        let map2 = [' ','A','B','C','D','E','F'];
+        let value = `#0${map1[option]}0000`;
+        this.document.execCommand('backcolor',false,value);
         this.handleKeyup();
+
+        forChildren(this.body,(node)=>{
+            //发现要找的节点
+            let attr = getAttribute(node,'style');
+            if(attr){
+                let patten = /background-color:\s*rgb\((\d+),\s*(\d+),\s*(\d+)\);/;
+                let result = attr.nodeValue.match(patten);
+                console.log(attr.nodeValue);
+                if(result){
+                    let r = Number(result[1]);
+                    let g = Number(result[2]);
+                    let b = Number(result[3]);
+                    let option2 = map2[r];
+                    return true;
+                }
+            }
+            return false;
+        });
         console.log(option);
     }
     //将选择的内容转换为填空
