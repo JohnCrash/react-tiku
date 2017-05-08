@@ -120,11 +120,12 @@ class TkFrame extends Component{
     }
     //选择题，填空题..., DropDownMenu选择
     handleDropDownMenuChange(event,index,value){
+        this.handleReset();
         if(this.state.isAuto){
             if(value==1){
                 this.automaticOption();
-            }else if(value==2){
-                this.automaticFeild();
+            }else{
+                 this.setState({isAuto:false});
             }
         }
         this.setState({topicsType:value});
@@ -134,7 +135,7 @@ class TkFrame extends Component{
         let option = event.target.textContent;
         let map1 = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6};
         let map2 = [' ','A','B','C','D','E','F'];
-        let value = `#0${map1[option]}0000`;
+        let value = `#0${map1[option]}FFFF`;
         this.document.execCommand('backcolor',false,value);
         this.handleKeyup();
 
@@ -147,9 +148,12 @@ class TkFrame extends Component{
                 console.log(attr.nodeValue);
                 if(result){
                     let r = Number(result[1]);
-                    let g = Number(result[2]);
-                    let b = Number(result[3]);
                     let option2 = map2[r];
+                    node.removeAttribute('style');
+                    node.setAttribute('option-btn',option2);
+                    node.setAttribute('onclick','option_onclick(this);');
+                    //通知改变并且调整编辑区大小
+                    this.handleKeyup();
                     return true;
                 }
             }
@@ -160,7 +164,7 @@ class TkFrame extends Component{
     //将选择的内容转换为填空
     handleFeildClick(event){
         this.document.execCommand('cut',false,null);
-        this.document.execCommand('inserthtml',false,'<input></input>');
+        this.document.execCommand('inserthtml',false,'<input type="text" size="6" align="middle" class="TextLine1"></input>');
         this.handleKeyup();
         console.log("handleFeildClick");
     }
@@ -170,13 +174,6 @@ class TkFrame extends Component{
      */
     automaticOption(){
         console.log("automaticOption");
-    }
-    /**
-     * 分析this.props.content的内容，自动做填空转换操作
-     * 如果成功返回true,失败返回false
-     */
-    automaticFeild(){
-        console.log("automaticFeild");
     }
     //重新编辑
     handleReset(){
@@ -237,15 +234,18 @@ class TkFrame extends Component{
                     </IconButton>,                    
                     <ToolbarSeparator />];
             if(this.state.topicsType==1 ||this.state.topicsType==2){
-                    tool = [	
-                <FlatButton
-                    label="自动"
-                    backgroundColor = {this.state.isAuto?checkColor:undefined}
-                    hoverColor = {this.state.isAuto?checkColor:undefined}
-                    onClick={this.handleAutoClick.bind(this)}
-                    style={{marginLeft:0,marginRight:0}}
-                    icon={<TkAutomatic color={toolbarIconColor}/>}>
-                </FlatButton>,
+                tool = [];
+                if(this.state.topicsType==1){
+                    tool.push(<FlatButton
+                        label="自动"
+                        backgroundColor = {this.state.isAuto?checkColor:undefined}
+                        hoverColor = {this.state.isAuto?checkColor:undefined}
+                        onClick={this.handleAutoClick.bind(this)}
+                        style={{marginLeft:0,marginRight:0}}
+                        icon={<TkAutomatic color={toolbarIconColor}/>}>
+                    </FlatButton>);
+                }
+                tool.push(
                 <FlatButton
                     label="手动"
                     backgroundColor = {this.state.isAuto?undefined:checkColor}
@@ -253,9 +253,8 @@ class TkFrame extends Component{
                     onClick={this.handleManualClick.bind(this)}
                     style={{marginLeft:0,marginRight:0}}
                     icon={<TkManual color={toolbarIconColor}/>}>
-                </FlatButton>,                                         
-                <ToolbarSeparator />
-                ];
+                </FlatButton>);                                      
+                tool.push(<ToolbarSeparator />);
             }
             if(this.state.topicsType==1){ //选择题
                 if(!this.state.isAuto){ //手动
@@ -268,13 +267,11 @@ class TkFrame extends Component{
                     });
                 }
             }else if(this.state.topicsType==2){ //填空题
-                if(!this.state.isAuto){ //手动
-                    optionTool = [<FlatButton
-                                label={'填空'}
-                                onTouchTap={this.handleFeildClick.bind(this)}
-                                style={{marginLeft:0,marginRight:0}}>
-                            </FlatButton>];
-                }
+                optionTool = [<FlatButton
+                            label={'填空'}
+                            onTouchTap={this.handleFeildClick.bind(this)}
+                            style={{marginLeft:0,marginRight:0}}>
+                        </FlatButton>];
             }
         }
 		return (<Page style={{margin:32}}>

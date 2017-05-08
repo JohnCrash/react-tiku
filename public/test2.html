@@ -1,14 +1,97 @@
-	<html>
-		<head></head>
-		<body>
-		<dd> 
-			<span>
-				<link rel="stylesheet" type="text/css" href="topics/css/7323f4e3943106dec9959bea0174bcda.css" />
-				<div className="wb_math">
-				<p>【重点题】判断。</p>
-				<p>(1)如果3x＝8y(x，y均不为0)，那么y与x成正比例。( )</p>
-				</div>
-			</span> 
-		</dd>
-		</body>
-	</html>
+<html lang="zh-CN">     
+<head>     
+  <title>按钮写法</title>     
+  <meta charset="UTF-8">     
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">     
+  <link rel="stylesheet" href="css/style.css">     
+<style type="text/css">     
+  a:hover{text-decoration: none;}     
+  .btn{     
+    display: inline-block;     
+    margin-top: 10px;     
+    padding: 10px 24px;     
+    border-radius: 4px;     
+    background-color: #63b7ff;     
+    color: #fff;     
+    cursor: pointer;     
+  }     
+  .btn:hover{     
+    background-color: #99c6ff;     
+  }     
+  .inbtn{     
+    border: none;     
+  }     
+  .bubtn{     
+    border: none;     
+  }     
+  .btn{     
+    font-style: normal;     
+  }     
+  .bgbtn span{     
+    margin-left: 10px;     
+    padding-left: 20px;     
+    background: url(images/edit.png) left center no-repeat;     
+  }     
+  .bgbtn02 img{     
+    margin-bottom: -3px;     
+    margin-right: 10px;     
+  }     
+  [option-btn]
+  {
+    display: inline-block;     
+    margin-top: 10px;     
+    padding: 10px 24px;     
+    border-radius: 4px;     
+    background-color: #63b7ff;     
+    color: #fff;     
+    cursor: pointer;  	
+  }
+  [option-btn]:hover{     
+    background-color: #99c6ff;     
+  }    
+  [option-correct]
+  {
+    display: inline-block;     
+    margin-top: 10px;     
+    padding: 10px 24px;     
+    border-radius: 4px;     
+    background-color: #ffb7ff;     
+    color: #fff;     
+    cursor: pointer;    
+  }
+  [option-correct]:hover{     
+    background-color: #ffc6ff;     
+  }   
+</style>     
+</head>     
+<body>     
+<!--<a>标签按钮-->     
+<span href="" option-btn="A" onclick="optionBTN(this);">a标签按钮</span>     
+<!--<input>标签按钮-->     
+<input class="inbtn btn" type="button" value="input标签按钮"  onclick="optionBTN(this);"/>     
+<!--<button>标签按钮-->     
+<button class="bubtn btn"  onclick="optionBTN(this);">button标签按钮</button>     
+<!--任意标签按钮-->     
+<i class="ibtn btn"  onclick="optionBTN(this);">i标签按钮</i>     
+<!--带背景图标按钮-->     
+<a href="" class="bgbtn btn">     
+  <span>带图标按钮</span>     
+</a>     
+<a href="" class="bgbtn02 btn">     
+  <img src="images/edit.png"/>带图标按钮     
+</a>     
+<script>
+function optionBTN(node){
+	if(node.hasAttribute('option-btn')){
+		var value = node.getAttribute('option-btn');
+		node.removeAttribute('option-btn');
+		node.setAttribute('option-correct',value);
+	}else if(node.hasAttribute('option-correct')){
+		var value = node.getAttribute('option-correct');
+		node.removeAttribute('option-correct');
+		node.setAttribute('option-btn',value);	
+	}
+}
+</script>
+</body>     
+</html> 

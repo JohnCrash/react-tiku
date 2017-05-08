@@ -47,6 +47,19 @@ class TkEditor extends Component{
 			<link rel="stylesheet" type="text/css" href="css/ti.css">
 		</head>
 		<body>${body}</body>
+		<script>
+			function option_onclick(node){
+				if(node.hasAttribute('option-btn')){
+					var value = node.getAttribute('option-btn');
+					node.removeAttribute('option-btn');
+					node.setAttribute('option-correct',value);
+				}else if(node.hasAttribute('option-correct')){
+					var value = node.getAttribute('option-correct');
+					node.removeAttribute('option-correct');
+					node.setAttribute('option-btn',value);	
+				}
+			}
+		</script>
 		</html>`;
 	}
 	//加载一道题进行编辑
