@@ -6,6 +6,9 @@ import TkNavDrawer from './tknavdrawer';
 import Snackbar from 'material-ui/Snackbar';
 import 'whatwg-fetch'
 
+const warningColor = "#D50000";
+const greenColor = "#1B5E20";
+
 class TkEditor extends Component{
 	constructor(){
 		super();
@@ -21,16 +24,20 @@ class TkEditor extends Component{
 			tag:'',
 			css:'',
 			source:'',
+			qid:-1,
+			body:'',
 			tid:'',
 			topicsType:-1,
-		}
-		this.topics = {
-			text:"hello world"
+			hasBody:false,
+			messageColor:warningColor,
 		}
 	}
 	//弹出一个错误条
-	messageBar(str){
-		this.setState({errorOpen:true,errorMsg:str});
+	messageBar(str,f){
+		setInterval((()=>{
+			this.state.errorOpen = false;
+		}).bind(this),5000);
+		this.setState({errorOpen:true,errorMsg:str,messageColor:f?greenColor:warningColor});
 	}
     componentDidMount(){
 
@@ -47,7 +54,7 @@ class TkEditor extends Component{
 			<link rel="stylesheet" type="text/css" href="css/ti.css">
 		</head>
 		<body>${body}</body>
-		<script>
+		<script inner-script>
 			function option_onclick(node){
 				if(node.hasAttribute('option-btn')){
 					var value = node.getAttribute('option-btn');
@@ -58,6 +65,14 @@ class TkEditor extends Component{
 					node.removeAttribute('option-correct');
 					node.setAttribute('option-btn',value);	
 				}
+			}
+			function answer_onchange(node){
+				node.removeAttribute('value');
+				node.setAttribute('value',node.value);
+				if(node.hasAttribute('answer-feild'))
+					node.setAttribute('answer-feild',node.value);
+				else
+					node.setAttribute('answer-feild2',node.value);
 			}
 		</script>
 		</html>`;
@@ -71,9 +86,12 @@ class TkEditor extends Component{
 			this.currentTopic = JSON.parse(data);
 			
 			let css = this.currentTopic.topic_css;
-
+			//如果body有内容，并且state是(1选择题，2填空题，3解答题)之一
+			let hasBody = this.currentTopic.state>=1 && this.currentTopic.state<=3 && this.currentTopic.body;
 			this.setState({
+			hasBody:hasBody,
 			topic:this.toHtmlDocument(css,this.currentTopic.topic_body),
+			body:this.toHtmlDocument(css,this.currentTopic.body),
 			answer:this.toHtmlDocument(css,this.currentTopic.topic_answer),
 			analysis:this.toHtmlDocument(css,this.currentTopic.topic_analysis),
 			image:this.currentTopic.topic_image,
@@ -81,6 +99,7 @@ class TkEditor extends Component{
 			tag:this.currentTopic.topic_tag,
 			source:this.currentTopic.source,
 			tid:this.currentTopic.tid,
+			qid:QuestionID,
 			topicsType:this.currentTopic.state});
 		}.bind(this)).catch(function(e){
 			if(this.error){
@@ -146,11 +165,18 @@ class TkEditor extends Component{
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
 				<TkFrame title='原题' content={this.state.image} source={this.state.source} tid={this.state.tid} type={0}/>
-				<TkFrame title='题目' content={this.state.topic} type={1} topicsType={this.state.topicsType}/>
-				<TkFrame title='解答' content={this.state.answer} type={2}/>
-				<TkFrame title='分析' content={this.state.analysis} type={3}/>
-				<TkFrame title='知识点' content={this.state.tag} type={4}/>
+				<TkFrame title='题目' messageBar={this.messageBar.bind(this)}
+					content={this.state.topic}
+					type={1}
+					hasBody={this.state.hasBody}
+					qid={this.state.qid}
+					body={this.state.body}
+					topicsType={this.state.topicsType}/>
+				<TkFrame title='解答' messageBar={this.messageBar.bind(this)} content={this.state.answer} type={2}/>
+				<TkFrame title='分析' messageBar={this.messageBar.bind(this)} content={this.state.analysis} type={3}/>
+				<TkFrame title='知识点' messageBar={this.messageBar.bind(this)} content={this.state.tag} type={4}/>
 				<Snackbar open={this.state.errorOpen} 
+				bodyStyle={{backgroundColor:this.state.messageColor}}
                 message={this.state.errorMsg} 
                 autoHideDuration={5000} />
 			</div>

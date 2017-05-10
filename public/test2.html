@@ -68,7 +68,7 @@
 <!--<a>标签按钮-->     
 <span href="" option-btn="A" onclick="optionBTN(this);">a标签按钮</span>     
 <!--<input>标签按钮-->     
-<input class="inbtn btn" type="button" value="input标签按钮"  onclick="optionBTN(this);"/>     
+<input type="text" value="input标签按钮"  onchange="change(this);"/>     
 <!--<button>标签按钮-->     
 <button class="bubtn btn"  onclick="optionBTN(this);">button标签按钮</button>     
 <!--任意标签按钮-->     
@@ -92,6 +92,12 @@ function optionBTN(node){
 		node.setAttribute('option-btn',value);	
 	}
 }
+function change(node){
+	node.removeAttribute('value');
+	node.setAttribute('value',node.value);
+}
 </script>
+<br/>
+<input type="text" value="input标签按钮"  onchange="change(this);"/>   
 </body>     
 </html> 

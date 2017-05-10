@@ -15,6 +15,8 @@ import TkAutomatic from 'material-ui/svg-icons/notification/adb';
 import TkManual from 'material-ui/svg-icons/maps/directions-walk';
 import TkHtmlViewer from './tkhtmlviewer';
 
+import htmldom from './htmldom';
+
 const checkColor = '#69F0AE';
 const toolbarIconColor = '#616161';
 const warningColor = '#EF9A9A';
@@ -41,6 +43,7 @@ function forChildren(node,cb){
  * topicsType = (1选择题，2填空题，3解答题，4其他，－1忽略，0未处理)
  * content = (html content)
  * title = (标题)
+ * hasBody = (如果以前编辑过就会有body)
  */
 class TkFrame extends Component{
 	constructor(){
@@ -61,6 +64,25 @@ class TkFrame extends Component{
         console.log('componentDidMount');
     }
     componentWillReceiveProps(nextProps){
+        if(this.props.qid!=nextProps.qid){
+            this.isIFrameLoad = false;
+            //自动保存上一个
+            this.handleUpload();
+            //新的加载
+            if(!nextProps.hasBody){
+                if(nextProps.topicsType>=1&&nextProps.topicsType<=3){
+                    //自动根据标记的类型进自动转换
+                }else{
+                    //这里先做选择题判断
+                    //不是判断题？
+                }
+            }else{
+                //如果已经有过编辑设置手动
+                this.setState({isAuto:false});
+            }
+            this.setState({isContentChange:false,//新加载都是没有改变
+                topicsType:nextProps.topicsType});
+        }
     }
     componentWillUnmount(){
         console.log('componentWillUnmount');
@@ -75,6 +97,18 @@ class TkFrame extends Component{
         }
         this.setState({iframeHeight:height});        
     }
+    onHtmlContentChange(content){
+        //去掉内部操作用的JavaScript代码,见tkeditor.toHtmlDocument
+        let dom = htmldom.parseDOM(content);
+        let newcontent = htmldom.writeHTML(dom,(node)=>{
+            if(node.type=="script" && 'inner-script' in node.attribs){
+                return null;
+            }
+            return node;
+        });
+        this.state.htmlContent = newcontent;
+        this.setState({htmlContent:newcontent});
+    }
     handleLoad(){
         if(this.iframe&&this.iframe.contentDocument&&this.iframe.contentDocument.body){
             var id;
@@ -83,7 +117,9 @@ class TkFrame extends Component{
             this.content = body.outerHTML;
             this.document = document;
             this.body = body;
-            this.state.htmlContent = this.content;
+            this.isIFrameLoad = true; //标记已经装载
+            //this.state.htmlContent = this.content;
+            this.onHtmlContentChange(this.content);
             var cb = (()=>{
                 clearInterval(id);
                 this.recalcIFrameSize();
@@ -121,14 +157,46 @@ class TkFrame extends Component{
     //选择题，填空题..., DropDownMenu选择
     handleDropDownMenuChange(event,index,value){
         this.handleReset();
-        if(this.state.isAuto){
-            if(value==1){
-                this.automaticOption();
-            }else{
-                 this.setState({isAuto:false});
+        //上面的调用将重新装载,并触发iframe.onLoad函数
+        var id = setInterval((()=>{
+            if(this.isIFrameLoad) //已经加载完成
+                clearInterval(id);
+            else
+                return; //继续等待知道加载完成
+
+            if(value!=this.props.topicsType){
+                this.setState({isContentChange:true});
             }
-        }
-        this.setState({topicsType:value});
+
+            if(this.state.isAuto){
+                if(value==1){
+                    this.automaticOption();
+                }else{
+                    this.setState({isAuto:false});
+                }
+            }
+            if(value==3){
+                //自动在最后面插入输入横线
+                var lastNode = null;
+                for(let i = this.body.children.length-1;i>=0;i--){
+                    if(this.body.children[i].tagName in {"DD":1,"DIV":1,"SPAN":1} ){
+                        lastNode = this.body.children[i];
+                    }
+                }
+                if(!lastNode)
+                    lastNode = this.body;
+                let input = document.createElement('input');
+                input.setAttribute('type','text');
+                input.setAttribute('size','64');
+                input.setAttribute('answer-feild2','');
+                input.setAttribute('onchange','answer_onchange(this);');
+                input.setAttribute('onkeyup','answer_onchange(this);');
+                lastNode.appendChild(document.createElement('br'));
+                lastNode.appendChild(input);
+                this.onHtmlContentChange(this.body.outerHTML);
+                this.recalcIFrameSize();
+            }
+        this.setState({topicsType:value});}).bind(this),100);
     }
     //将选择的内容转换为交互按键
     handleOptionClick(event){
@@ -164,7 +232,8 @@ class TkFrame extends Component{
     //将选择的内容转换为填空
     handleFeildClick(event){
         this.document.execCommand('cut',false,null);
-        this.document.execCommand('inserthtml',false,'<input type="text" size="6" align="middle" class="TextLine1"></input>');
+        this.document.execCommand('inserthtml',false,
+        '<input type="text" size="6" answer-feild="" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>');
         this.handleKeyup();
         console.log("handleFeildClick");
     }
@@ -177,25 +246,58 @@ class TkFrame extends Component{
     }
     //重新编辑
     handleReset(){
+        this.isIFrameLoad = false;
         this.iframe.srcdoc = this.props.content;
         this.setState({isContentChange:false});
     }
+    messageBar(msg,p){
+        if(this.props.messageBar)
+            this.props.messageBar(msg,p);
+    }
     //上传
-    handleUpload(){
+    handleUpload(event){
+        if(this.state.isContentChange){
+            //因为使用handleKeyup不能侦测到全部的改变，这里强制更新
+            this.onHtmlContentChange(this.body.outerHTML);
 
+            fetch(`upload?QuestionID=${this.props.qid}`,
+                {method:'POST',
+                headers: {'Content-Type': 'application/json'},
+                body:JSON.stringify({
+                    state:this.state.topicsType,
+                    body:this.state.htmlContent})}).then(function(responese){
+                return responese.text();
+            }).then(function(data){
+                if(data!='ok'){
+                    this.messageBar(data);
+                }else{
+                    this.messageBar('save successed',1);
+                }
+            }.bind(this)).catch(function(e){
+                this.messageBar(e.toString());
+            }.bind(this));
+        }else if(event){
+            this.messageBar('There is no change');
+        }
     }
     //加载上次上传
     handleLoadPrev(){
-
+        this.isIFrameLoad = false;
+        this.iframe.srcdoc = this.props.hasBody?this.props.body:this.props.content;
+        this.setState({
+            topicsType:this.props.topicsType,
+            isContentChange:false});
     }
     //使用keyup事件跟踪文档的变化
     handleKeyup(event){
-        if(this.body.outerHTML!=this.content){
-            this.setState({isContentChange:true,
-                htmlContent:this.body.outerHTML});
-            this.recalcIFrameSize();
+        if(this.body.outerHTML!=this.content || this.state.topicsType!=this.props.topicsType){
+            this.setState({isContentChange:true});
         }else{
             this.setState({isContentChange:false});
+        }
+        if(this.body.outerHTML!=this.content){
+            this.onHtmlContentChange(this.body.outerHTML);
+            this.recalcIFrameSize();
         }
     }
 	render(){
@@ -218,7 +320,7 @@ class TkFrame extends Component{
           ref = {(iframe)=>{this.iframe = iframe}}
           height = {this.state.iframeHeight}
           style={{width:'100%',border:0}} 
-          srcDoc={this.props.content}>
+          srcDoc={this.props.hasBody?this.props.body:this.props.content}>
           </iframe>);
         }
         if(this.props.type==1){
