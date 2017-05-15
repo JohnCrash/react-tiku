@@ -66,9 +66,11 @@
 </head>     
 <body>     
 <!--<a>标签按钮-->     
-<span href="" option-btn="A" onclick="optionBTN(this);">a标签按钮</span>     
+<span href="" option-btn="A" onclick="optionBTN(this);">a标签按钮</span></br>
+<span href="" option-correct="B" onclick="optionBTN(this);">a标签按钮 Hello World!</span></br>
+<span href="" option-btn="C" onclick="optionBTN(this);">按钮</span></br>
 <!--<input>标签按钮-->     
-<input type="text" value="input标签按钮"  onchange="change(this);"/>     
+<input type="text" value="input标签按钮"  onchange="change(this);" onkeyup="change(this);" />     
 <!--<button>标签按钮-->     
 <button class="bubtn btn"  onclick="optionBTN(this);">button标签按钮</button>     
 <!--任意标签按钮-->     
@@ -81,6 +83,31 @@
   <img src="images/edit.png"/>带图标按钮     
 </a>     
 <script>
+function enumAllElement(node,cb){
+	cb(node);
+	for(let i = 0;i < node.children.length;i++){
+		enumAllElement(node.children[i],cb);
+	}
+}
+function btnSameWidth(){
+	var opts = [];
+	enumAllElement(document,function(node){
+		if(node.hasAttribute&&(node.hasAttribute('option-btn')||node.hasAttribute('option-correct'))){
+			opts.push(node);
+		}
+	});
+	if(opts.length>1){
+		var maxWidth = 0;
+		for(let i=0;i<opts.length;i++){
+			let w = opts[i].clientWidth;
+			maxWidth = w>maxWidth?w:maxWidth;
+		}
+		maxWidth -= 47;
+		for(let i=0;i<opts.length;i++){
+			opts[i].style.width = maxWidth.toString()+'px';
+		}		
+	}
+}
 function optionBTN(node){
 	if(node.hasAttribute('option-btn')){
 		var value = node.getAttribute('option-btn');
@@ -91,10 +118,18 @@ function optionBTN(node){
 		node.removeAttribute('option-correct');
 		node.setAttribute('option-btn',value);	
 	}
+	btnSameWidth();
 }
 function change(node){
 	node.removeAttribute('value');
 	node.setAttribute('value',node.value);
+	//node.size = (node.value.length>4?node.value.length:4);
+	//node.setAttribute('style',node.value);
+	node.style.width = 0;
+	node.style.width = node.scrollWidth+10;
+}
+window.onload=function(){
+	btnSameWidth();
 }
 </script>
 <br/>

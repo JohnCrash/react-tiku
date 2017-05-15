@@ -9,6 +9,9 @@ function attributeString(attr){
     }
     return str;
 }
+/**
+ * 将dom转换为HTML文本，每个节点都通过cb过滤
+ */
 function writeHTML(dom,cb){
     var str = "";
     for(let i = 0;i<dom.length;i++){
@@ -31,7 +34,19 @@ function writeHTML(dom,cb){
     return str;
 }
 
+/**
+ * 遍历每一个节点
+ */
+function foreachNode(dom,cb,data,parent){
+    if(dom){
+        for(let i=0;i<dom.length;i++){
+            cb(dom[i],data,parent);
+            foreachNode(dom[i].children,cb,data,dom[i]);
+        }
+    }
+}
 export default {
     parseDOM: htmlparser2.parseDOM,
     writeHTML:writeHTML,
+    foreachNode:foreachNode,
 };

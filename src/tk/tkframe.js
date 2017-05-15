@@ -16,6 +16,7 @@ import TkManual from 'material-ui/svg-icons/maps/directions-walk';
 import TkHtmlViewer from './tkhtmlviewer';
 
 import htmldom from './htmldom';
+import {optionAuto,feildAuto} from './tkauto';
 
 const checkColor = '#69F0AE';
 const toolbarIconColor = '#616161';
@@ -233,7 +234,7 @@ class TkFrame extends Component{
     handleFeildClick(event){
         this.document.execCommand('cut',false,null);
         this.document.execCommand('inserthtml',false,
-        '<input type="text" size="6" answer-feild="" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>');
+        '<input type="text" size="1" answer-feild="" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>');
         this.handleKeyup();
         console.log("handleFeildClick");
     }
@@ -242,7 +243,18 @@ class TkFrame extends Component{
      * 如果成功返回true,失败返回false
      */
     automaticOption(){
-        console.log("automaticOption");
+        let [result,answer] = optionAuto(this.props.content,this.props.answer);
+        if(result){
+            this.iframe.srcdoc = result;
+            let a = answer ? `答案为${answer}`:'但未解析出正确答案';
+            this.messageBar(`成功转化为选择题,${a}.`,1);
+            var id = setInterval((()=>{
+                clearInterval(id);
+                this.handleKeyup();
+            }).bind(this),100);
+        }else{
+            this.messageBar('不能自动转换为选择题');
+        }
     }
     //重新编辑
     handleReset(){
@@ -271,13 +283,13 @@ class TkFrame extends Component{
                 if(data!='ok'){
                     this.messageBar(data);
                 }else{
-                    this.messageBar('save successed',1);
+                    this.messageBar('成功保存',1);
                 }
             }.bind(this)).catch(function(e){
                 this.messageBar(e.toString());
             }.bind(this));
         }else if(event){
-            this.messageBar('There is no change');
+            this.messageBar('没有任何改变');
         }
     }
     //加载上次上传
@@ -364,7 +376,7 @@ class TkFrame extends Component{
                         return <FlatButton
                             label={item}
                             onTouchTap={this.handleOptionClick.bind(this)}
-                            style={{marginLeft:0,marginRight:0}}>
+                            style={{marginLeft:0,marginRight:0,minWidth:36}}>
                         </FlatButton>;
                     });
                 }
