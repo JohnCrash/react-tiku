@@ -38,11 +38,10 @@ function writeHTML(dom,cb){
  * 遍历每一个节点
  */
 function foreachNode(dom,cb,data,parent){
-    if(dom){
-        for(let i=0;i<dom.length;i++){
-            cb(dom[i],data,parent);
+    for(let i=0;i<dom.length;i++){
+        cb(dom[i],data,parent);
+        if('children' in dom[i])
             foreachNode(dom[i].children,cb,data,dom[i]);
-        }
     }
 }
 export default {

@@ -38,6 +38,7 @@ function forChildren(node,cb){
         forChildren(node.children[i],cb);
     }
 }
+
 /**
  * 具体的html编辑
  * type = (0:image,1:body,2:answer,3:analysis)

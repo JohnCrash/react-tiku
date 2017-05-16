@@ -5,6 +5,7 @@ import TkNavDrawer from './tknavdrawer';
 /* 在屏幕下方弹上一个消息 */
 import Snackbar from 'material-ui/Snackbar';
 import 'whatwg-fetch'
+import htmldom from './htmldom';
 
 const warningColor = "#D50000";
 const greenColor = "#1B5E20";
@@ -131,11 +132,19 @@ class TkEditor extends Component{
 			this.currentTopic = JSON.parse(data);
 			
 			let css = this.currentTopic.topic_css;
+			//将源文件中的js脚本过滤掉
+			let dom = htmldom.parseDOM(this.currentTopic.topic_body);
+			let topic_body = htmldom.writeHTML(dom,(node)=>{
+				if(node.type=="script")
+					return null;
+				else
+					return node;
+			})
 			//如果body有内容，并且state是(1选择题，2填空题，3解答题)之一
 			let hasBody = this.currentTopic.state>=1 && this.currentTopic.state<=3 && this.currentTopic.body;
 			this.setState({
 			hasBody:hasBody,
-			topic:this.toHtmlDocument(css,this.currentTopic.topic_body),
+			topic:this.toHtmlDocument(css,topic_body),
 			body:this.toHtmlDocument(css,this.currentTopic.body),
 			answer:this.toHtmlDocument(css,this.currentTopic.topic_answer),
 			analysis:this.toHtmlDocument(css,this.currentTopic.topic_analysis),

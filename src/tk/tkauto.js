@@ -14,7 +14,7 @@ function inheritList(node){
  */
 function matchParent(options){
     if(options.length < 3)
-        return null;
+        return [];
     let inherit = [];
     for(let i=0;i<options.length;i++){
         inherit.push(inheritList(options[i].node));
@@ -23,7 +23,7 @@ function matchParent(options){
     let length = inherit[0].length;
     for(let i=0;i<inherit.length;i++){
         if(inherit[i].length != length){
-            return null;
+            return [];
         }
     }
     //找到最近的父节点
@@ -42,7 +42,7 @@ function matchParent(options){
             return [v,i];
         }
     }
-    return null;
+    return [];
 }
 /**
  * 返回第level级父节点
@@ -121,12 +121,14 @@ function praserAnswer(an){
  * 如果doc文档是一个选择题就将其转化为交互选择题
  */
 export function optionAuto(doc,an){
-    let dom = htmldom.parseDOM(doc);
-    let options = [];
+    var dom = htmldom.parseDOM(doc);
+    var options = [];
+    var answer = praserAnswer(an);
+
     htmldom.foreachNode(dom,(node,data,parent)=>{
         node.parent = parent?parent:null; //dom初始化好父节点
         if(node.type=="text"&&node.data){
-            let m = node.data.match(/^[\s　]*([ABCDEFGH])[\s　,.，、。]/);
+            var m = node.data.match(/^[\s　]*([ABCDEFGH])[\s　,.，、。]/);
             if(m && m[0]){
                 if(data.length>0){
                     if( data[data.length-1].option.charCodeAt()+1 == m[0].charCodeAt() )//假设是顺序的(A,B,C...)
@@ -137,7 +139,7 @@ export function optionAuto(doc,an){
             }
         }
     },options);
-    let answer = praserAnswer(an);
+
     let [commParent,level] = matchParent(options);
     if(commParent){
         if(level==1){
@@ -180,6 +182,8 @@ export function optionAuto(doc,an){
                     break;
                 else commParent.children.pop();
             }
+            //明确插入一个回车
+            commParent.children.push({name:'br',type:'tag',attribs:{},children:{}});
             for(let i=0;i<childs.length;i++){
                 let child = childs[i];
                 commParent.children.push(child);
@@ -197,8 +201,8 @@ export function optionAuto(doc,an){
             }
             return [htmldom.writeHTML(dom),answer];
         }
-    }
-    return ["",null];
+    }    
+    return [];
 }
 
 export function feildAuto(doc){

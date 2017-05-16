@@ -183,7 +183,7 @@ class TkNavDrawer extends Component{
             });
         }
         return (
-            <Drawer docked={'false'} width={400} ref={(drawer)=>{this.drawer = drawer}}
+            <Drawer docked={false} width={400} ref={(drawer)=>{this.drawer = drawer}}
                 open={this.state.openDrawer}>
                 <Toolbar>
                     <ToolbarTitle text='选择练习册'/>
