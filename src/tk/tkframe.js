@@ -68,6 +68,7 @@ class TkFrame extends Component{
     componentWillReceiveProps(nextProps){
         if(this.props.qid!=nextProps.qid){
             this.isIFrameLoad = false;
+            this.isFirstLoad = true;
             //自动保存上一个
             this.handleUpload();
             //新的加载
@@ -120,6 +121,10 @@ class TkFrame extends Component{
             this.document = document;
             this.body = body;
             this.isIFrameLoad = true; //标记已经装载
+            if(this.isFirstLoad){
+                this.sourceContent = body.outerHTML;
+                this.isFirstLoad = false;
+            }
             //this.state.htmlContent = this.content;
             this.onHtmlContentChange(this.content);
             var cb = (()=>{
@@ -207,7 +212,7 @@ class TkFrame extends Component{
         let map2 = [' ','A','B','C','D','E','F'];
         let value = `#0${map1[option]}FFFF`;
         this.document.execCommand('backcolor',false,value);
-        this.handleKeyup();
+        this.checkChange();
 
         forChildren(this.body,(node)=>{
             //发现要找的节点
@@ -223,7 +228,7 @@ class TkFrame extends Component{
                     node.setAttribute('option-btn',option2);
                     node.setAttribute('onclick','option_onclick(this);');
                     //通知改变并且调整编辑区大小
-                    this.handleKeyup();
+                    this.checkChange();
                     return true;
                 }
             }
@@ -236,7 +241,7 @@ class TkFrame extends Component{
         this.document.execCommand('cut',false,null);
         this.document.execCommand('inserthtml',false,
         '<input type="text" size="1" answer-feild="" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>');
-        this.handleKeyup();
+        this.checkChange();
         console.log("handleFeildClick");
     }
     /**
@@ -249,19 +254,23 @@ class TkFrame extends Component{
             this.iframe.srcdoc = result;
             let a = answer ? `答案为${answer}`:'但未解析出正确答案';
             this.messageBar(`成功转化为选择题,${a}.`,1);
-            var id = setInterval((()=>{
-                clearInterval(id);
-                this.handleKeyup();
-            }).bind(this),100);
+            this.checkChange();
         }else{
             this.messageBar('不能自动转换为选择题');
         }
+    }
+    //检查看看文档内容是不是改变了
+    checkChange(){
+        var id = setInterval((()=>{
+            clearInterval(id);
+            this.handleKeyup();
+        }).bind(this),100);
     }
     //重新编辑
     handleReset(){
         this.isIFrameLoad = false;
         this.iframe.srcdoc = this.props.content;
-        this.setState({isContentChange:false});
+        this.checkChange();
     }
     messageBar(msg,p){
         if(this.props.messageBar)
@@ -303,12 +312,12 @@ class TkFrame extends Component{
     }
     //使用keyup事件跟踪文档的变化
     handleKeyup(event){
-        if(this.body.outerHTML!=this.content || this.state.topicsType!=this.props.topicsType){
+        if(this.body.outerHTML!=this.sourceContent || this.state.topicsType!=this.props.topicsType){
             this.setState({isContentChange:true});
         }else{
             this.setState({isContentChange:false});
         }
-        if(this.body.outerHTML!=this.content){
+        if(this.body.outerHTML!=this.sourceContent){
             this.onHtmlContentChange(this.body.outerHTML);
             this.recalcIFrameSize();
         }

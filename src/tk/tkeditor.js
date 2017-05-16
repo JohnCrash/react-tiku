@@ -10,6 +10,18 @@ import htmldom from './htmldom';
 const warningColor = "#D50000";
 const greenColor = "#1B5E20";
 
+/**
+ * 删除脚本中的js脚本标签
+ */
+function removeJavaScriptTag(html){
+	return htmldom.writeHTML(htmldom.parseDOM(html),(node)=>{
+		if(node.type=="script")
+			return null;
+		else
+			return node;
+	})
+}
+
 class TkEditor extends Component{
 	constructor(){
 		super();
@@ -48,13 +60,14 @@ class TkEditor extends Component{
 		this.drawer.toggle();
 	}
 	toHtmlDocument(css,body){
+		let newbody = removeJavaScriptTag(body);
 		return `<html>
 		<head>
 			<link rel="stylesheet" type="text/css" href="css/reset.css">
 			<link rel="stylesheet" type="text/css" href="css/style.css">
 			<link rel="stylesheet" type="text/css" href="css/ti.css">
 		</head>
-		<body>${body}</body>
+		<body>${newbody}</body>
 		<script inner-script>
 			function enumAllElement(node,cb){
 				cb(node);
@@ -132,19 +145,11 @@ class TkEditor extends Component{
 			this.currentTopic = JSON.parse(data);
 			
 			let css = this.currentTopic.topic_css;
-			//将源文件中的js脚本过滤掉
-			let dom = htmldom.parseDOM(this.currentTopic.topic_body);
-			let topic_body = htmldom.writeHTML(dom,(node)=>{
-				if(node.type=="script")
-					return null;
-				else
-					return node;
-			})
 			//如果body有内容，并且state是(1选择题，2填空题，3解答题)之一
 			let hasBody = this.currentTopic.state>=1 && this.currentTopic.state<=3 && this.currentTopic.body;
 			this.setState({
 			hasBody:hasBody,
-			topic:this.toHtmlDocument(css,topic_body),
+			topic:this.toHtmlDocument(css,this.currentTopic.topic_body),
 			body:this.toHtmlDocument(css,this.currentTopic.body),
 			answer:this.toHtmlDocument(css,this.currentTopic.topic_answer),
 			analysis:this.toHtmlDocument(css,this.currentTopic.topic_analysis),
