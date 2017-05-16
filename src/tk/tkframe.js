@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import Page from 'material-ui/Paper';
+import Dialog from 'material-ui/Dialog';
 import IconButton from 'material-ui/IconButton';
 import TextField from 'material-ui/TextField';
 import CodeIcon from 'material-ui/svg-icons/action/code';
@@ -8,19 +9,21 @@ import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import FlatButton from 'material-ui/FlatButton';
 
+import TkTest from 'material-ui/svg-icons/av/play-circle-outline';
 import TkReset from 'material-ui/svg-icons/navigation/refresh';
 import TkDownload from 'material-ui/svg-icons/file/cloud-download';
 import TkUpload from 'material-ui/svg-icons/file/cloud-upload';
 import TkAutomatic from 'material-ui/svg-icons/notification/adb';
 import TkManual from 'material-ui/svg-icons/maps/directions-walk';
 import TkHtmlViewer from './tkhtmlviewer';
-
+import TkTestDailog from './tktest';
 import htmldom from './htmldom';
 import {optionAuto,feildAuto} from './tkauto';
 
 const checkColor = '#69F0AE';
 const toolbarIconColor = '#616161';
 const warningColor = '#EF9A9A';
+
 //取得节点的属性，属性名称为attrName
 function getAttribute(node,attrName){
     for(let i = 0;i < node.attributes.length;i++){
@@ -57,6 +60,8 @@ class TkFrame extends Component{
             topicsType:-1,
             isContentChange:false,
             htmlContent:'',
+            openTestDialog:false,
+            testContent:"",
         }; 
 	}
     componentWillMount(){
@@ -322,6 +327,18 @@ class TkFrame extends Component{
             this.recalcIFrameSize();
         }
     }
+    //交互测试
+    handleTest(event){
+        if(this.body && this.body.outerHTML){
+            this.state.testContent = this.body.outerHTML;
+            this.setState({openTestDialog:true});
+        }else{
+            this.messageBar("没有要测试的内容!");
+        }
+    }
+    handleTestClose(event){
+        this.setState({openTestDialog:false});
+    }
 	render(){
         let tool,saveTool,optionTool,topic_image,content;
         if(!this.props.content || this.props.content.length===0){
@@ -355,7 +372,10 @@ class TkFrame extends Component{
                     </IconButton>,                    
                     <IconButton tooltip='存储入库' onClick={this.handleUpload.bind(this)}>
                         <TkUpload  color={this.state.isContentChange?warningColor:toolbarIconColor}/>
-                    </IconButton>,                    
+                    </IconButton>,    
+                    <IconButton tooltip='交互测试' onClick={this.handleTest.bind(this)}>
+                        <TkTest  color={toolbarIconColor}/>
+                    </IconButton>,                                    
                     <ToolbarSeparator />];
             if(this.state.topicsType==1 ||this.state.topicsType==2){
                 tool = [];
@@ -426,6 +446,11 @@ class TkFrame extends Component{
             <TkHtmlViewer expend={this.state.expendHTML}>{this.state.htmlContent}</TkHtmlViewer>
             {topic_image}
             {content}
+            <TkTestDailog 
+                open={this.state.openTestDialog}
+                content={this.state.testContent}
+                closeme={this.handleTestClose.bind(this)}
+                messageBar={this.messageBar.bind(this)}/>
 		</Page>);
 	}
 };
