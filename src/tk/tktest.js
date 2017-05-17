@@ -146,7 +146,8 @@ class TkTestDialog extends Component{
     render(){
         let content = this.toHtmlDocument(this.props.content);
         return <Dialog title={'交互测试'}
-            actions={[<FlatButton label='提交' primary={true} onTouchTap={this.handleCommit.bind(this)}/>]}
+            actions={[<FlatButton label='取消' primary={true} onTouchTap={this.props.closeme}/>,
+                <FlatButton label='提交' primary={true} onTouchTap={this.handleCommit.bind(this)}/>]}
             modal={false} 
             onRequestClose={this.props.closeme}
             open={this.props.open}>

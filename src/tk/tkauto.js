@@ -109,9 +109,14 @@ function praserAnswer(an){
     let result = null;
     htmldom.foreachNode(dom,(node,data,parent)=>{
         if(node.type=="text"&&node.data){
-            let m =node.data.match(/(故选|答案为|选|因此选)[：:]?\s*([ABCDEFGH])/);
+            let m =node.data.match(/(故选|答案为|答案|选|因此选)[：:]?\s*([ABCDEFGH])/);
             if(m && m.length>2){
                 result =  m[2];
+                return;
+            }
+            m = node.data.match(/^[\n\r\s\t]*([ABCDEFGH])[\n\r\s\t]*$/);
+            if(m && m.length>1){
+                result = m[1];
             }
         }
     });
