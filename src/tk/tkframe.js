@@ -9,14 +9,17 @@ import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import FlatButton from 'material-ui/FlatButton';
 
-import TkTest from 'material-ui/svg-icons/av/play-circle-outline';
+import TkTest from 'material-ui/svg-icons/av/airplay';
 import TkReset from 'material-ui/svg-icons/navigation/refresh';
 import TkDownload from 'material-ui/svg-icons/file/cloud-download';
 import TkUpload from 'material-ui/svg-icons/file/cloud-upload';
 import TkAutomatic from 'material-ui/svg-icons/notification/adb';
 import TkManual from 'material-ui/svg-icons/maps/directions-walk';
+import TkMarkdown from 'material-ui/svg-icons/communication/swap-calls';
+
 import TkHtmlViewer from './tkhtmlviewer';
 import TkTestDailog from './tktest';
+import TkMarkd from './tkmarkd';
 import htmldom from './htmldom';
 import {optionAuto,feildAuto} from './tkauto';
 
@@ -62,6 +65,7 @@ class TkFrame extends Component{
             htmlContent:'',
             openTestDialog:false,
             testContent:"",
+            mode:"html",
         }; 
 	}
     componentWillMount(){
@@ -89,7 +93,8 @@ class TkFrame extends Component{
                 this.setState({isAuto:false});
             }
             this.setState({isContentChange:false,//新加载都是没有改变
-                topicsType:nextProps.topicsType});
+                topicsType:nextProps.topicsType,
+                mode:"html"});
         }
     }
     componentWillUnmount(){
@@ -118,39 +123,43 @@ class TkFrame extends Component{
         this.setState({htmlContent:newcontent});
     }
     handleLoad(){
-        if(this.iframe&&this.iframe.contentDocument&&this.iframe.contentDocument.body){
-            var id;
-            var document = this.iframe.contentDocument;
-            var body = document.body;
-            this.content = body.outerHTML;
-            this.document = document;
-            this.body = body;
-            this.isIFrameLoad = true; //标记已经装载
-            if(this.isFirstLoad){
-                this.sourceContent = body.outerHTML;
-                this.isFirstLoad = false;
+        if(this.state.mode=="html"){
+            if(this.iframe&&this.iframe.contentDocument&&this.iframe.contentDocument.body){
+                var id;
+                var document = this.iframe.contentDocument;
+                var body = document.body;
+                this.content = body.outerHTML;
+                this.document = document;
+                this.body = body;
+                this.isIFrameLoad = true; //标记已经装载
+                if(this.isFirstLoad){
+                    this.sourceContent = body.outerHTML;
+                    this.isFirstLoad = false;
+                }
+                //this.state.htmlContent = this.content;
+                this.onHtmlContentChange(this.content);
+                var cb = (()=>{
+                    clearInterval(id);
+                    this.recalcIFrameSize();
+                }).bind(this);
+                /**
+                 * 这里可能还没有计算出布局，因此scrollHeight可能不准确
+                 * 如果在100ms秒后再设置一回height将会基本正常。
+                 */
+                cb();
+                id = setInterval(cb,100);
+                /**
+                 * 这里打开编辑功能
+                 */
+                document.designMode = 'on';
+                document.contentEditable=true;
+                document.onkeyup=this.handleKeyup.bind(this);
+            }else{
+                this.setState({iframeHeight:0,
+                    topicsType:this.props.topicsType});
             }
-            //this.state.htmlContent = this.content;
-            this.onHtmlContentChange(this.content);
-            var cb = (()=>{
-                clearInterval(id);
-                this.recalcIFrameSize();
-            }).bind(this);
-            /**
-             * 这里可能还没有计算出布局，因此scrollHeight可能不准确
-             * 如果在100ms秒后再设置一回height将会基本正常。
-             */
-            cb();
-            id = setInterval(cb,100);
-            /**
-             * 这里打开编辑功能
-             */
-            document.designMode = 'on';
-            document.contentEditable=true;
-            document.onkeyup=this.handleKeyup.bind(this);
-        }else{
-            this.setState({iframeHeight:0,
-                topicsType:this.props.topicsType});
+        }else{//markd
+
         }
     }
     //弹出原题
@@ -168,47 +177,51 @@ class TkFrame extends Component{
     }
     //选择题，填空题..., DropDownMenu选择
     handleDropDownMenuChange(event,index,value){
-        this.handleReset();
-        //上面的调用将重新装载,并触发iframe.onLoad函数
-        var id = setInterval((()=>{
-            if(this.isIFrameLoad) //已经加载完成
-                clearInterval(id);
-            else
-                return; //继续等待知道加载完成
+        if(this.state.mode=="html"){
+            this.handleReset();
+            //上面的调用将重新装载,并触发iframe.onLoad函数
+            var id = setInterval((()=>{
+                if(this.isIFrameLoad) //已经加载完成
+                    clearInterval(id);
+                else
+                    return; //继续等待知道加载完成
 
-            if(value!=this.props.topicsType){
-                this.setState({isContentChange:true});
-            }
-
-            if(this.state.isAuto){
-                if(value==1){
-                    this.automaticOption();
-                }else{
-                    this.setState({isAuto:false});
+                if(value!=this.props.topicsType){
+                    this.setState({isContentChange:true});
                 }
-            }
-            if(value==3){
-                //自动在最后面插入输入横线
-                var lastNode = null;
-                for(let i = this.body.children.length-1;i>=0;i--){
-                    if(this.body.children[i].tagName in {"DD":1,"DIV":1,"SPAN":1} ){
-                        lastNode = this.body.children[i];
+
+                if(this.state.isAuto){
+                    if(value==1){
+                        this.automaticOption();
+                    }else{
+                        this.setState({isAuto:false});
                     }
                 }
-                if(!lastNode)
-                    lastNode = this.body;
-                let input = document.createElement('input');
-                input.setAttribute('type','text');
-                input.setAttribute('size','64');
-                input.setAttribute('answer-feild2','');
-                input.setAttribute('onchange','answer_onchange(this);');
-                input.setAttribute('onkeyup','answer_onchange(this);');
-                lastNode.appendChild(document.createElement('br'));
-                lastNode.appendChild(input);
-                this.onHtmlContentChange(this.body.outerHTML);
-                this.recalcIFrameSize();
-            }
-        this.setState({topicsType:value});}).bind(this),100);
+                if(value==3){
+                    //自动在最后面插入输入横线
+                    var lastNode = null;
+                    for(let i = this.body.children.length-1;i>=0;i--){
+                        if(this.body.children[i].tagName in {"DD":1,"DIV":1,"SPAN":1} ){
+                            lastNode = this.body.children[i];
+                        }
+                    }
+                    if(!lastNode)
+                        lastNode = this.body;
+                    let input = document.createElement('input');
+                    input.setAttribute('type','text');
+                    input.setAttribute('size','64');
+                    input.setAttribute('answer-feild2','');
+                    input.setAttribute('onchange','answer_onchange(this);');
+                    input.setAttribute('onkeyup','answer_onchange(this);');
+                    lastNode.appendChild(document.createElement('br'));
+                    lastNode.appendChild(input);
+                    this.onHtmlContentChange(this.body.outerHTML);
+                    this.recalcIFrameSize();
+                }
+            this.setState({topicsType:value});}).bind(this),100);
+        }else{//markd
+            this.setState({topicsType:value});
+        }
     }
     //将选择的内容转换为交互按键
     handleOptionClick(event){
@@ -273,9 +286,12 @@ class TkFrame extends Component{
     }
     //重新编辑
     handleReset(){
-        this.isIFrameLoad = false;
-        this.iframe.srcdoc = this.props.content;
-        this.checkChange();
+        if(this.state.mode=="html"){
+            this.isIFrameLoad = false;
+            this.iframe.srcdoc = this.props.content;
+            this.checkChange();
+        }else{//markd
+        }
     }
     messageBar(msg,p){
         if(this.props.messageBar)
@@ -283,61 +299,81 @@ class TkFrame extends Component{
     }
     //上传
     handleUpload(event){
-        if(this.state.isContentChange){
-            //因为使用handleKeyup不能侦测到全部的改变，这里强制更新
-            this.onHtmlContentChange(this.body.outerHTML);
+        if(this.state.mode=="html"){
+            if(this.state.isContentChange){
+                //因为使用handleKeyup不能侦测到全部的改变，这里强制更新
+                this.onHtmlContentChange(this.body.outerHTML);
 
-            fetch(`upload?QuestionID=${this.props.qid}`,
-                {method:'POST',
-                headers: {'Content-Type': 'application/json'},
-                body:JSON.stringify({
-                    state:this.state.topicsType,
-                    body:this.state.htmlContent})}).then(function(responese){
-                return responese.text();
-            }).then(function(data){
-                if(data!='ok'){
-                    this.messageBar(data);
-                }else{
-                    this.messageBar('成功保存',1);
-                }
-            }.bind(this)).catch(function(e){
-                this.messageBar(e.toString());
-            }.bind(this));
-        }else if(event){
-            this.messageBar('没有任何改变');
+                fetch(`upload?QuestionID=${this.props.qid}`,
+                    {method:'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body:JSON.stringify({
+                        state:this.state.topicsType,
+                        body:this.state.htmlContent})}).then(function(responese){
+                    return responese.text();
+                }).then(function(data){
+                    if(data!='ok'){
+                        this.messageBar(data);
+                    }else{
+                        this.messageBar('成功保存',1);
+                    }
+                }.bind(this)).catch(function(e){
+                    this.messageBar(e.toString());
+                }.bind(this));
+            }else if(event){
+                this.messageBar('没有任何改变');
+            }
+        }else{//markd
         }
     }
     //加载上次上传
     handleLoadPrev(){
-        this.isIFrameLoad = false;
-        this.iframe.srcdoc = this.props.hasBody?this.props.body:this.props.content;
-        this.setState({
-            topicsType:this.props.topicsType,
-            isContentChange:false});
+        if(this.state.mode=="html"){
+            this.isIFrameLoad = false;
+            this.iframe.srcdoc = this.props.hasBody?this.props.body:this.props.content;
+            this.setState({
+                topicsType:this.props.topicsType,
+                isContentChange:false});
+        }else{//markd
+        }
     }
     //使用keyup事件跟踪文档的变化
     handleKeyup(event){
-        if(this.body.outerHTML!=this.sourceContent || this.state.topicsType!=this.props.topicsType){
-            this.setState({isContentChange:true});
-        }else{
-            this.setState({isContentChange:false});
-        }
-        if(this.body.outerHTML!=this.sourceContent){
-            this.onHtmlContentChange(this.body.outerHTML);
-            this.recalcIFrameSize();
+        if(this.state.mode=="html"){
+            if(this.body.outerHTML!=this.sourceContent || this.state.topicsType!=this.props.topicsType){
+                this.setState({isContentChange:true});
+            }else{
+                this.setState({isContentChange:false});
+            }
+            if(this.body.outerHTML!=this.sourceContent){
+                this.onHtmlContentChange(this.body.outerHTML);
+                this.recalcIFrameSize();
+            }
+        }else{//markd
         }
     }
     //交互测试
     handleTest(event){
-        if(this.body && this.body.outerHTML){
-            this.state.testContent = this.body.outerHTML;
-            this.setState({openTestDialog:true});
-        }else{
-            this.messageBar("没有要测试的内容!");
-        }
+        if(this.state.mode=="html"){
+            if(this.body && this.body.outerHTML){
+                this.state.testContent = this.body.outerHTML;
+                this.setState({openTestDialog:true});
+            }else{
+                this.messageBar("没有要测试的内容!");
+            }
+        }else{//markd
+        }        
     }
     handleTestClose(event){
         this.setState({openTestDialog:false});
+    }
+    //使用Markdown重新进行编辑
+    handleMarkdown(){
+        if(this.state.mode=="markd"){
+            this.setState({mode:"html"});
+        }else if(this.state.mode=="html"){
+            this.setState({mode:"markd"});
+        }
     }
 	render(){
         let tool,saveTool,optionTool,topic_image,content;
@@ -354,13 +390,19 @@ class TkFrame extends Component{
             tool = <a href="javascript:;" onClick={this.handlePopUrl.bind(this)}>{this.props.tid}</a>;
         }
         if(this.props.type>=1 && this.props.type<=3){
-          content = (<iframe
-          onLoad={this.handleLoad.bind(this)}
-          ref = {(iframe)=>{this.iframe = iframe}}
-          height = {this.state.iframeHeight}
-          style={{width:'100%',border:0}} 
-          srcDoc={this.props.hasBody?this.props.body:this.props.content}>
-          </iframe>);
+            if(this.state.mode=="html"){
+                content = (<iframe
+                onLoad={this.handleLoad.bind(this)}
+                ref = {(iframe)=>{this.iframe = iframe}}
+                height = {this.state.iframeHeight}
+                style={{width:'100%',border:0}} 
+                srcDoc={this.props.hasBody?this.props.body:this.props.content}>
+                </iframe>);
+            }else if(this.state.mode=="markd"){
+                content = <TkMarkd 
+                height={this.state.iframeHeight<480?480:this.state.iframeHeight}>
+                </TkMarkd>;
+            }
         }
         if(this.props.type==1){
                 saveTool = [
@@ -375,9 +417,12 @@ class TkFrame extends Component{
                     </IconButton>,    
                     <IconButton tooltip='交互测试' onClick={this.handleTest.bind(this)}>
                         <TkTest  color={toolbarIconColor}/>
-                    </IconButton>,                                    
+                    </IconButton>,   
+                    <IconButton tooltip='切换Markdown' onClick={this.handleMarkdown.bind(this)}>
+                        <TkMarkdown  color={toolbarIconColor}/>
+                    </IconButton>,                                                     
                     <ToolbarSeparator />];
-            if(this.state.topicsType==1 ||this.state.topicsType==2){
+            if((this.state.topicsType==1 ||this.state.topicsType==2)&&this.state.mode=="html"){
                 tool = [];
                 if(this.state.topicsType==1){
                     tool.push(<FlatButton
@@ -400,7 +445,7 @@ class TkFrame extends Component{
                 </FlatButton>);                                      
                 tool.push(<ToolbarSeparator />);
             }
-            if(this.state.topicsType==1){ //选择题
+            if(this.state.topicsType==1&&this.state.mode=="html"){ //选择题
                 if(!this.state.isAuto){ //手动
                     optionTool = ['A','B','C','D','E','F'].map((item)=>{
                         return <FlatButton
@@ -410,7 +455,7 @@ class TkFrame extends Component{
                         </FlatButton>;
                     });
                 }
-            }else if(this.state.topicsType==2){ //填空题
+            }else if(this.state.topicsType==2&&this.state.mode=="html"){ //填空题
                 optionTool = [<FlatButton
                             label={'填空'}
                             onTouchTap={this.handleFeildClick.bind(this)}
