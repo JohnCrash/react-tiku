@@ -68,7 +68,7 @@ class TkNavDrawer extends Component{
             this.forceUpdate();
         }
         if(!this.units[item.props.primaryText]){
-            let request = `/module?Book=${this.currentBook}&Module=${item.props.primaryText}`;
+            let request = encodeURI(`/module?Book=${this.currentBook}&Module=${item.props.primaryText}`);
             fetch(request).then(function(response){
                 return response.text();
             }.bind(this)).then(function(data){
@@ -92,7 +92,7 @@ class TkNavDrawer extends Component{
             this.modules = null;
             this.currentModule = null;
             this.currentBook = this.books[value-1].BookName;
-            let request = `/module?Book=${this.books[value-1].BookName}`;
+            let request = encodeURI(`/module?Book=${this.books[value-1].BookName}`);
             fetch(request).then(function(response){
                 return response.text();
             }.bind(this)).then(function(data){
@@ -117,7 +117,7 @@ class TkNavDrawer extends Component{
             //回调上一层组件，通知有一个单元选择
             if(this.props.onSelectUnit){
                 if(item.props.unitJson.BookIndex){
-                    let request = `/unit?BookIndex=${item.props.unitJson.BookIndex}`;
+                    let request = encodeURI(`/unit?BookIndex=${item.props.unitJson.BookIndex}`);
                     fetch(request).then(function(response){
                         return response.text();
                     }).then(function(data){
@@ -131,7 +131,7 @@ class TkNavDrawer extends Component{
                         }                    
                     }.bind(this));
                 }else if(item.props.unitJson.UnitBegin!==undefined && item.props.unitJson.UnitEnd!==undefined){
-                    let request = `/unitbyindex?UnitBegin=${item.props.unitJson.UnitBegin}&UnitEnd=${item.props.unitJson.UnitEnd}`;
+                    let request = encodeURI(`/unitbyindex?UnitBegin=${item.props.unitJson.UnitBegin}&UnitEnd=${item.props.unitJson.UnitEnd}`);
                     fetch(request).then(function(response){
                         return response.text();
                     }).then(function(data){

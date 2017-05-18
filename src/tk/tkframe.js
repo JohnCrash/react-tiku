@@ -346,7 +346,7 @@ class TkFrame extends Component{
         }
         if(this.props.type==0){
             topic_image = <p style={{textAlign:'center'}}>
-                <img frameborder={0}
+                <img frameBorder={0}
             style={{margin:'auto',
             width:'60%'}} 
             src={this.props.content}/>

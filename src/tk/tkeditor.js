@@ -143,7 +143,6 @@ class TkEditor extends Component{
 		}).then(function(data){
 			this.error = data;
 			this.currentTopic = JSON.parse(data);
-			
 			let css = this.currentTopic.topic_css;
 			//如果body有内容，并且state是(1选择题，2填空题，3解答题)之一
 			let hasBody = this.currentTopic.state>=1 && this.currentTopic.state<=3 && this.currentTopic.body;
