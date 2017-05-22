@@ -12,19 +12,22 @@ function editormd(body,height){
     </head>
     <body>
         <div id="layout">
-            <div id="tk-editormd">                
+            <div id="tk-editormd">
                 <textarea style="display:none;">${body}</textarea>
             </div>
         </div>
         <script src="editormd/examples/js/jquery.min.js"></script>
-        <script src="editormd/editormd.js"></script>   
+        <script src="editormd/editormd.js"></script>
         <script type="text/javascript">
             $(function() {
-                var testEditor = editormd("tk-editormd", {
+                document.markd = editormd("tk-editormd", {
                     width: "100%",
                     height: ${height},
                     path : 'editormd/lib/',
-                    tex  : true
+                    tex  : true,
+                    saveHTMLToTextarea : true,
+                    flowChart : true,
+                    sequenceDiagram : true,
                 });
             });
         </script>
@@ -38,15 +41,31 @@ function editormd(body,height){
 class TkMarkd extends Component{
     constructor(){
         super();
-
         this.state={
-            content:""
+            content:''
         };
     }
     componentWillMount(){
-        this.setState({content:editormd("",this.props.height)});
+        let content = this.props.content?this.props.content:"";
+        this.setState({content:editormd(content,this.props.height)});
     }    
     handleLoad(){
+        if(this.iframe && this.iframe.contentDocument){
+            this.markd = this.iframe.contentDocument.markd;
+            this.markd.on('change',this.props.onkeyup);
+        }
+    }
+    //读取当前编辑的markdown
+    getMarkdown(){
+        if(this.markd){
+            return this.markd.getMarkdown();
+        }
+    }
+    //读取当前的HTML
+    getHTML(){
+        if(this.markd){
+            return this.markd.getHTML();
+        }        
     }
     render(){
        return <iframe

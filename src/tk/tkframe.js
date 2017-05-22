@@ -66,6 +66,8 @@ class TkFrame extends Component{
             openTestDialog:false,
             testContent:"",
             mode:"html",
+            markd:"",
+            isMarkdContentChange:false,
         }; 
 	}
     componentWillMount(){
@@ -92,9 +94,15 @@ class TkFrame extends Component{
                 //如果已经有过编辑设置手动
                 this.setState({isAuto:false});
             }
+            //确定模式
+            let mode = "html";
+            if(nextProps.markd && nextProps.markd.length>0){
+                mode = "markd";
+            }
             this.setState({isContentChange:false,//新加载都是没有改变
                 topicsType:nextProps.topicsType,
-                mode:"html"});
+                mode:mode,
+                markd:nextProps.markd});
         }
     }
     componentWillUnmount(){
@@ -324,6 +332,27 @@ class TkFrame extends Component{
                 this.messageBar('没有任何改变');
             }
         }else{//markd
+            if(this.state.isMarkdContentChange){
+                fetch(`upload?QuestionID=${this.props.qid}`,
+                    {method:'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body:JSON.stringify({
+                        state:this.state.topicsType,
+                        body:this.markd.getHTML(),
+                        markd_body:this.markd.getMarkdown()})}).then(function(responese){
+                    return responese.text();
+                }).then(function(data){
+                    if(data!='ok'){
+                        this.messageBar(data);
+                    }else{
+                        this.messageBar('成功保存',1);
+                    }
+                }.bind(this)).catch(function(e){
+                    this.messageBar(e.toString());
+                }.bind(this));                
+            }else if(event){
+                this.messageBar('内容没有任何改变');
+            }
         }
     }
     //加载上次上传
@@ -335,6 +364,7 @@ class TkFrame extends Component{
                 topicsType:this.props.topicsType,
                 isContentChange:false});
         }else{//markd
+            this.markd.getHTML();
         }
     }
     //使用keyup事件跟踪文档的变化
@@ -350,6 +380,13 @@ class TkFrame extends Component{
                 this.recalcIFrameSize();
             }
         }else{//markd
+            //TkMarkd有改变
+            let cur = this.markd.getMarkdown();
+            if(cur!=this.props.markd && !(this.props.markd==null && cur.length==0)){
+                this.setState({isMarkdContentChange:true});
+            }else{
+                this.setState({isMarkdContentChange:false});
+            }
         }
     }
     //交互测试
@@ -362,6 +399,12 @@ class TkFrame extends Component{
                 this.messageBar("没有要测试的内容!");
             }
         }else{//markd
+            if(this.markd){
+                this.state.testContent = this.markd.getHTML();
+                this.setState({openTestDialog:true});
+            }else{
+                this.messageBar("没有要测试的内容!");
+            }
         }        
     }
     handleTestClose(event){
@@ -370,6 +413,7 @@ class TkFrame extends Component{
     //使用Markdown重新进行编辑
     handleMarkdown(){
         if(this.state.mode=="markd"){
+            this.state.markd = this.markd.getMarkdown();
             this.setState({mode:"html"});
         }else if(this.state.mode=="html"){
             this.setState({mode:"markd"});
@@ -400,11 +444,20 @@ class TkFrame extends Component{
                 </iframe>);
             }else if(this.state.mode=="markd"){
                 content = <TkMarkd 
+                ref = {(iframe)=>{this.markd = iframe}}
+                content = {this.state.markd}
+                onkeyup = {this.handleKeyup.bind(this)}
                 height={this.state.iframeHeight<480?480:this.state.iframeHeight}>
                 </TkMarkd>;
             }
         }
         if(this.props.type==1){
+                let c;
+                if(this.state.mode=="html"){
+                    c = this.state.isContentChange?warningColor:toolbarIconColor;
+                }else{
+                    c = this.state.isMarkdContentChange?warningColor:toolbarIconColor;
+                }
                 saveTool = [
                     <IconButton tooltip='重新编辑' onClick={this.handleReset.bind(this)}>
                         <TkReset color={toolbarIconColor}/>
@@ -413,7 +466,7 @@ class TkFrame extends Component{
                         <TkDownload color={toolbarIconColor}/>
                     </IconButton>,                    
                     <IconButton tooltip='存储入库' onClick={this.handleUpload.bind(this)}>
-                        <TkUpload  color={this.state.isContentChange?warningColor:toolbarIconColor}/>
+                        <TkUpload  color={c}/>
                     </IconButton>,    
                     <IconButton tooltip='交互测试' onClick={this.handleTest.bind(this)}>
                         <TkTest  color={toolbarIconColor}/>

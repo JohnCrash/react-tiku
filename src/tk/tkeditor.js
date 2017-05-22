@@ -43,6 +43,10 @@ class TkEditor extends Component{
 			topicsType:-1,
 			hasBody:false,
 			messageColor:warningColor,
+			markd_body:'',
+			markd_answer:'',
+			markd_analysis:'',
+			markd_tag:'',
 		}
 	}
 	//弹出一个错误条
@@ -158,7 +162,11 @@ class TkEditor extends Component{
 			source:this.currentTopic.source,
 			tid:this.currentTopic.tid,
 			qid:QuestionID,
-			topicsType:this.currentTopic.state});
+			topicsType:this.currentTopic.state,
+			markd_body:this.currentTopic.markd_body,
+			markd_analysis:this.currentTopic.markd_analysis,
+			markd_answer:this.currentTopic.markd_answer,
+			markd_tag:this.currentTopic.markd_tag});
 		}.bind(this)).catch(function(e){
 			if(this.error){
 				this.messageBar(this.error);
@@ -226,14 +234,27 @@ class TkEditor extends Component{
 				<TkFrame title='题目' messageBar={this.messageBar.bind(this)}
 					content={this.state.topic}
 					answer={this.state.answer}
+					markd={this.state.markd_body}
 					type={1}
 					hasBody={this.state.hasBody}
 					qid={this.state.qid}
 					body={this.state.body}
 					topicsType={this.state.topicsType}/>
-				<TkFrame title='解答' messageBar={this.messageBar.bind(this)} content={this.state.answer} type={2}/>
-				<TkFrame title='分析' messageBar={this.messageBar.bind(this)} content={this.state.analysis} type={3}/>
-				<TkFrame title='知识点' messageBar={this.messageBar.bind(this)} content={this.state.tag} type={4}/>
+				<TkFrame title='解答' 
+					markd={this.state.markd_answer}
+					messageBar={this.messageBar.bind(this)}
+				 	content={this.state.answer} 
+					type={2}/>
+				<TkFrame title='分析' 
+					markd={this.state.markd_analysis}
+					messageBar={this.messageBar.bind(this)} 
+					content={this.state.analysis} 
+					type={3}/>
+				<TkFrame title='知识点' 
+					markd={this.state.markd_tag}
+					messageBar={this.messageBar.bind(this)}
+					content={this.state.tag}
+					type={4}/>
 				<Snackbar open={this.state.errorOpen} 
 				bodyStyle={{backgroundColor:this.state.messageColor}}
                 message={this.state.errorMsg} 
