@@ -400,7 +400,7 @@ class TkFrame extends Component{
             }
         }else{//markd
             if(this.markd){
-                this.state.testContent = this.markd.getHTML();
+                this.state.testContent = this.markd.getMarkdown();
                 this.setState({openTestDialog:true});
             }else{
                 this.messageBar("没有要测试的内容!");
@@ -545,6 +545,7 @@ class TkFrame extends Component{
             {topic_image}
             {content}
             <TkTestDailog 
+                type={this.state.mode=="html"?1:2}
                 open={this.state.openTestDialog}
                 content={this.state.testContent}
                 closeme={this.handleTestClose.bind(this)}

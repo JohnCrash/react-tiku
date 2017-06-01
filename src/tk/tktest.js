@@ -14,12 +14,70 @@ class TkTestDialog extends Component{
             content:"",
         };
     }
+  /**
+   * 将使用editor.md编辑的题展示出来
+   */
+  toHtmlDocument2(body){
+      return `<html>
+		<head>
+            <link rel="stylesheet" type="text/css" href="editormd/css/editormd.preview.css">    
+		</head>
+        <body>
+            <div id="layout">
+                <div id="test-editormd-view2">
+                    <textarea id="append-test" style="display:none;">${body}</textarea>
+                </div>
+            </div>
+            <script src="editormd/examples/js/jquery.min.js"></script>
+            <script src="editormd/lib/marked.min.js"></script>
+            <script src="editormd/lib/prettify.min.js"></script>
+            
+            <script src="editormd/lib/raphael.min.js"></script>
+            <script src="editormd/lib/underscore.min.js"></script>
+            <script src="editormd/lib/sequence-diagram.min.js"></script>
+            <script src="editormd/lib/flowchart.min.js"></script>
+            <script src="editormd/lib/jquery.flowchart.min.js"></script>
+
+            <script src="editormd/editormd.js"></script>
+            <script type="text/javascript">
+             $(function() {
+                testEditormdView2 = editormd.markdownToHTML("test-editormd-view2", {
+                    htmlDecode      : "style,script,iframe",  // you can filter tags decode
+                    emoji           : true,
+                    taskList        : true,
+                    tex             : true,  // 默认不解析
+                    flowChart       : true,  // 默认不解析
+                    sequenceDiagram : true,  // 默认不解析
+                });                 
+            });
+            </script>
+        </body>
+      </html>`
+  }
+  /**
+   * 无脚本简单展示，不能处理代码高亮和tex公式
+   */
+  toHtmlDocument_2(body){
+      return `<html>
+		<head>
+            <link rel="stylesheet" type="text/css" href="editormd/css/editormd.css">    
+		</head>
+        <body>
+        <div class="markdown-body editormd-preview-container" previewcontainer="true" style="padding: 20px;">
+        ${body}
+        </div>
+        </body>
+      </html>`
+  }
+  /**
+   * 将抓取作业帮的题展示出来 ，需要用到rest.css,style.css,ti.css
+   */
     toHtmlDocument(body){
 		return `<html>
 		<head>
 			<link rel="stylesheet" type="text/css" href="css/reset.css">
 			<link rel="stylesheet" type="text/css" href="css/style.css">
-			<link rel="stylesheet" type="text/css" href="css/ti.css">
+			<link rel="stylesheet" type="text/css" href="css/ti.css">        
 		</head>
 		<body>${body}</body>
 		<script inner-script>
@@ -144,7 +202,7 @@ class TkTestDialog extends Component{
         this.props.closeme();
     }
     render(){
-        let content = this.toHtmlDocument(this.props.content);
+        let content = this.props.type==1?this.toHtmlDocument(this.props.content):this.toHtmlDocument2(this.props.content);
         return <Dialog title={'交互测试'}
             actions={[<FlatButton label='取消' primary={true} onTouchTap={this.props.closeme}/>,
                 <FlatButton label='提交' primary={true} onTouchTap={this.handleCommit.bind(this)}/>]}

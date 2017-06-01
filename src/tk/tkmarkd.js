@@ -25,6 +25,7 @@ function editormd(body,height){
                     height: ${height},
                     path : 'editormd/lib/',
                     tex  : true,
+                    taskList : true,
                     saveHTMLToTextarea : true,
                     flowChart : true,
                     sequenceDiagram : true,
