@@ -56,16 +56,22 @@ class TkMarkd extends Component{
     }
     componentWillMount(){
         let content = this.props.content?this.props.content:"";
-        this.setState({content:editormd(content,this.props.height)});
+        this.setState({content:editormd(content,this.props.height)});      
+    }
+    componentWillReceiveProps(nextProps){
+        if(this.props.qid!==nextProps.qid){
+            let content = nextProps.content?nextProps.content:"";
+            this.setState({content:editormd(content,nextProps.height)});
+        }
     }    
     handleLoad(){
-        if(this.props.onLoad){
-            this.props.onLoad(this.iframe);
-        }
         if(this.iframe && this.iframe.contentDocument){
             this.markd = this.iframe.contentDocument.markd;
             this.markd.on('change',this.props.onkeyup);
         }
+        if(this.props.onLoad){
+            this.props.onLoad();
+        }       
     }
     //读取当前编辑的markdown
     getMarkdown(){

@@ -172,9 +172,12 @@ class TkFrame extends Component{
                     topicsType:this.props.topicsType});
             }
         }else{//markd
+            if(this.isIFrameLoad){
+                return;
+            }
             if(this.markd && this.markd.iframe){
                 var id;
-                var document = this.markd.iframe.contentDocument;
+                var document = this.markd.iframe.contentDocument; 
                 var body = document.body;
                 this.content = body.outerHTML;
                 this.document = document;
@@ -471,6 +474,7 @@ class TkFrame extends Component{
                 </iframe>);
             }else if(this.state.mode=="markd"){
                 content = <TkMarkd 
+                qid = {this.props.qid}
                 onLoad={this.handleLoad.bind(this)}
                 ref = {(iframe)=>{this.markd = iframe}}
                 content = {this.state.markd}
