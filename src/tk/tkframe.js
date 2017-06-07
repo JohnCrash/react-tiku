@@ -113,8 +113,13 @@ class TkFrame extends Component{
     }
     recalcIFrameSize(){
         let height = 0;
-        for(let i = 0;i<this.body.children.length;i++){
-            height += this.body.children[i].scrollHeight;
+        if(this.state.mode==="html"){
+            for(let i = 0;i<this.body.children.length;i++){
+                height += this.body.children[i].scrollHeight;
+            }
+        }else{
+            height = this.markd.getHeight();
+            this.markd.doFullScreen();
         }
         this.setState({iframeHeight:height});        
     }
@@ -167,7 +172,28 @@ class TkFrame extends Component{
                     topicsType:this.props.topicsType});
             }
         }else{//markd
-
+            if(this.markd && this.markd.iframe){
+                var id;
+                var document = this.markd.iframe.contentDocument;
+                var body = document.body;
+                this.content = body.outerHTML;
+                this.document = document;
+                this.body = body;
+                this.isIFrameLoad = true; //标记已经装载
+                if(this.isFirstLoad){
+                    this.sourceContent = body.outerHTML;
+                    this.isFirstLoad = false;
+                }
+                var cb = (()=>{
+                    clearInterval(id);
+                    this.recalcIFrameSize();
+                }).bind(this);
+                cb();
+                id = setInterval(cb,100);
+            }else{
+                this.setState({iframeHeight:0,
+                    topicsType:this.props.topicsType});
+            }
         }
     }
     //弹出原题
@@ -387,6 +413,7 @@ class TkFrame extends Component{
             }else{
                 this.setState({isMarkdContentChange:false});
             }
+            this.recalcIFrameSize();
         }
     }
     //交互测试
@@ -444,10 +471,11 @@ class TkFrame extends Component{
                 </iframe>);
             }else if(this.state.mode=="markd"){
                 content = <TkMarkd 
+                onLoad={this.handleLoad.bind(this)}
                 ref = {(iframe)=>{this.markd = iframe}}
                 content = {this.state.markd}
                 onkeyup = {this.handleKeyup.bind(this)}
-                height={this.state.iframeHeight<480?480:this.state.iframeHeight}>
+                height={this.state.iframeHeight<180?180:this.state.iframeHeight}>
                 </TkMarkd>;
             }
         }

@@ -20,7 +20,7 @@ class TkTestDialog extends Component{
   toHtmlDocument2(body){
       return `<html>
 		<head>
-            <link rel="stylesheet" type="text/css" href="editormd/css/editormd.preview.css">    
+            <link rel="stylesheet" type="text/css" href="editormd/css/editormd.preview.css">
 		</head>
         <body>
             <div id="layout">

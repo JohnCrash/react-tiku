@@ -5,10 +5,7 @@ function editormd(body,height){
 <html lang="zh">
     <head>
         <meta charset="utf-8" />
-        <title>Tex 科学公式语言 (TeX/LaTeX) - Editor.md examples</title>
-        <link rel="stylesheet" href="editormd/examples/css/style.css" />
         <link rel="stylesheet" href="editormd/css/editormd.css" />
-        <link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
     </head>
     <body>
         <div id="layout">
@@ -62,6 +59,9 @@ class TkMarkd extends Component{
         this.setState({content:editormd(content,this.props.height)});
     }    
     handleLoad(){
+        if(this.props.onLoad){
+            this.props.onLoad(this.iframe);
+        }
         if(this.iframe && this.iframe.contentDocument){
             this.markd = this.iframe.contentDocument.markd;
             this.markd.on('change',this.props.onkeyup);
@@ -78,6 +78,18 @@ class TkMarkd extends Component{
         if(this.markd){
             return this.markd.getHTML();
         }        
+    }
+    getHeight(){
+        if(this.markd){
+            var tb = this.markd.toolbar[0];
+            var prc = this.markd.previewContainer[0];
+            return tb.scrollHeight + prc.scrollHeight;
+        }
+    }
+    doFullScreen(){
+        if(this.markd){
+            this.markd.doFullScreen();
+        }
     }
     render(){
        return <iframe

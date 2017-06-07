@@ -1537,7 +1537,7 @@
 					}
 				}
                 editormd.$mathjax.Hub.Typeset(tex[0]);
-				
+				//editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
 				//tex.find(".katex").css("font-size", "1.6em");
             }); 
 			return this;
@@ -2702,6 +2702,25 @@
             return this;
         },
         
+        doFullScreen : function() {
+            var _this            = this;
+            var state            = this.state;
+            var editor           = this.editor;
+            var fullscreenClass  = this.classPrefix + "fullscreen";
+
+			state.fullscreen = true;
+
+			$("html,body").css("overflow", "hidden");
+			
+			editor.css({
+				width    : $(window).width(),
+				height   : $(window).height()
+			}).addClass(fullscreenClass);
+
+			this.resize();
+
+            return this;
+        },		
         /**
          * 编辑器退出全屏显示
          * Exit fullscreen state
@@ -4128,6 +4147,7 @@
 						}
 					}
 					editormd.$mathjax.Hub.Typeset(tex[0]);
+					//editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
 					
                     //tex.find(".katex").css("font-size", "1.6em");
                 });
