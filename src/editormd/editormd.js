@@ -331,6 +331,7 @@
     editormd.dialogZindex = 99999;
     
     editormd.$katex       = null;
+	editormd.$mathjax     = null;
     editormd.$marked      = null;
     editormd.$CodeMirror  = null;
     editormd.$prettyPrint = null;
@@ -1508,6 +1509,39 @@
             return this;
         },
         
+		/**
+		 * 解析Tex(MathJax)数学公式
+		 * TeX(MathJax) renderer
+		 */
+		mathjaxRender : function() {
+
+			if (timer === null)
+            {
+                return this;
+            }
+
+			this.previewContainer.find("." + editormd.classNames.tex).each(function(){
+                var tex  = $(this);
+				if(tex[0].hasAttribute("asciimath")){
+					if(tex[0].hasAttribute("inline")){
+						tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
+					}else{
+						tex[0].innerHTML = "<div style=\"text-align:center\">`"+tex[0].innerHTML+"`</div>";
+					}
+				}else{
+					if(tex[0].hasAttribute("inline")){
+						tex[0].innerHTML = "\\("+tex[0].innerHTML+"\\)";
+					}else{
+						tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
+					}
+				}
+                editormd.$mathjax.Hub.Typeset(tex[0]);
+				
+				//tex.find(".katex").css("font-size", "1.6em");
+            }); 
+			return this;
+		},
+		
         /**
          * 解析和渲染流程图及时序图
          * FlowChart and SequenceDiagram Renderer
@@ -2080,6 +2114,23 @@
                     }
                 }                
                 
+				if(settings.mathjax)
+				{
+                    if (!editormd.mathjaxLoaded && settings.autoLoadModules) 
+                    {
+                        editormd.loadMathJax(function() {
+                            editormd.$mathjax = MathJax;
+                            editormd.mathjaxLoaded = true;
+                            _this.mathjaxRender();
+                        });
+                    } 
+                    else 
+                    {
+                        editormd.$mathjax = MathJax;
+                        this.mathjaxRender();
+                    }					
+				}
+				
                 if (settings.flowChart || settings.sequenceDiagram)
                 {
                     flowchartTimer = setTimeout(function(){
@@ -3601,18 +3652,35 @@
             var isTeXAddClass   = (isTeXLine)     ? " class=\"" + editormd.classNames.tex + "\"" : "";
             var isToC           = (settings.tocm) ? /^(\[TOC\]|\[TOCM\])$/.test(text) : /^\[TOC\]$/.test(text);
             var isToCMenu       = /^\[TOCM\]$/.test(text);
-            
-            if (!isTeXLine && isTeXInline) 
+
+			if (!isTeXLine && isTeXInline) 
             {
-                text = text.replace(/(\$\$([^\$]*)\$\$)+/g, function($1, $2) {
-                    return "<span class=\"" + editormd.classNames.tex + "\">" + $2.replace(/\$/g, "") + "</span>";
-                });
+				text = text.replace(/(\$\$([^\$]*)\$\$)+/g, function($1, $2) {
+					return "<span class=\"" + editormd.classNames.tex + "\" inline=1>" + $2.replace(/\$/g, "") + "</span>";
+				});					
             } 
             else 
-            {
-                text = (isTeXLine) ? text.replace(/\$/g, "") : text;
+            {	
+				var isAsciiMathInline = /\$(.*)\$/g.test(text);
+				var isAsciiMathLine   = /^\$(.*)\$$/.test(text);
+				
+				if(isTeXLine && isTeXInline){
+					text = text.replace(/\$/g, "");
+				}
+				else if(!isAsciiMathLine && isAsciiMathInline)
+				{
+					text = text.replace(/(\$([^\$]*)\$)+/g, function($1, $2) {
+						return "<span class=\"" + editormd.classNames.tex + "\" asciimath=1 inline=1>" + $2.replace(/\$/g, "") + "</span>";
+					});	
+				}
+				else if(isAsciiMathLine)
+				{
+					text = text.replace(/(\$([^\$]*)\$)+/g, function($1, $2) {
+						return "<span class=\"" + editormd.classNames.tex + "\" asciimath=1>" + $2.replace(/\$/g, "") + "</span>";
+					});	
+				}
             }
-            
+			
             var tocHTML = "<div class=\"markdown-toc editormd-markdown-toc\">" + text + "</div>";
             
             return (isToC) ? ( (isToCMenu) ? "<div class=\"editormd-toc-menu\">" + tocHTML + "</div><br/>" : tocHTML )
@@ -3632,7 +3700,11 @@
             else if ( lang === "math" || lang === "latex" || lang === "katex")
             {
                 return "<p class=\"" + editormd.classNames.tex + "\">" + code + "</p>";
-            } 
+            }
+			else if( lang === "asciimath" || lang === "am" )
+			{
+				return "<p class=\"" + editormd.classNames.tex + "\" asciimath=1>" + code + "</p>";
+			}
             else 
             {
 
@@ -3905,6 +3977,7 @@
             markdownSourceCode   : false,
             htmlDecode           : false,
             autoLoadKaTeX        : true,
+			autoLoadMathJax		 : true,
             pageBreak            : true,
             atLink               : true,    // for @link
             emailLink            : true,    // for mail address auto link
@@ -3938,6 +4011,7 @@
             taskList             : settings.taskList,
             emoji                : settings.emoji,
             tex                  : settings.tex,
+			mathjax				 : settings.mathjax,
             pageBreak            : settings.pageBreak,
             atLink               : settings.atLink,           // for @link
             emailLink            : settings.emailLink,        // for mail address auto link
@@ -4034,6 +4108,33 @@
             }
         }
         
+        if (settings.mathjax)
+        {
+            var mathjaxHandle = function() {
+                div.find("." + editormd.classNames.tex).each(function(){
+					var tex  = $(this);
+					var mn = tex.html().replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+					console.log("mathjaxHandle:"+mn);
+					tex.html(mn);
+					MathJax.Typeset(tex[0]);
+                    tex.find(".katex").css("font-size", "1.6em");
+                });
+            };
+            
+            if (settings.autoLoadMathJax && !editormd.$mathjax && !editormd.mathjaxLoaded)
+            {
+                this.loadMathJax(function() {
+                    editormd.$mathjax      = MathJax;
+                    editormd.mathjaxLoaded = true;
+                    mathjaxHandle();
+                });
+            }
+            else
+            {
+                mathjaxHandle();
+            }
+        }
+		
         div.getMarkdown = function() {            
             return saveTo.val();
         };
@@ -4179,12 +4280,12 @@
     // 使用国外的CDN，加载速度有时会很慢，或者自定义URL
     // You can custom KaTeX load url.
     editormd.katexURL  = {
-        css : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min",
-        js  : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min"
+        css : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min",
+        js  : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min"
     };
-    
+	
     editormd.kaTeXLoaded = false;
-    
+	
     /**
      * 加载KaTeX文件
      * load KaTeX files
@@ -4197,7 +4298,18 @@
             editormd.loadScript(editormd.katexURL.js, callback || function(){});
         });
     };
-        
+    
+	editormd.mathjaxURL = "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML";
+	
+	editormd.mathjaxLoaded = false;
+	
+	/**
+	 * 加载MathJax文件
+	 */
+    editormd.loadMathJax = function (callback) {
+        editormd.loadScript(editormd.mathjaxURL, callback || function(){});
+    };
+    	 
     /**
      * 锁屏
      * lock screen

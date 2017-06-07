@@ -44,6 +44,8 @@ input {margin-top: .7em}
     QUEUE.Push(function () {
       math = MathJax.Hub.getAllJax("MathOutput")[0];
       box = document.getElementById("box");
+	  console.log("jax: "+math.toString());
+	  console.log("box: "+box.toString());
       SHOWBOX(); // box is initially hidden so the braces don't show
     });
 
@@ -70,7 +72,7 @@ Type some \(\rm\TeX\) code and press RETURN:<br />
 
 <p>You typed:</p>
 <div class="box" id="box" style="visibility:hidden">
-<div id="MathOutput" class="output">$${}$$</div>
+<div id="MathOutput" class="output">$$$$</div>
 </div>
 
 <script>
