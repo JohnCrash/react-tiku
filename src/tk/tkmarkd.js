@@ -30,6 +30,16 @@ function editormd(body,height){
                     saveHTMLToTextarea : true,
                     flowChart : true,
                     sequenceDiagram : true,
+                    toolbarIcons : function() {
+                        return [
+            "undo", "redo", "|", 
+            "bold", "del", "italic", "quote","|", 
+            "h1", "h2", "h3", "|", 
+            "list-ul", "list-ol", "hr", "|",
+            "link", "reference-link", "image", "code", "preformatted-text", "code-block", "table", "html-entities", "|",
+            "watch", "preview", "fullscreen", "|",
+            "help"]
+                    },                    
                 });
             });
         </script>

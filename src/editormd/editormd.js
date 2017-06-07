@@ -1526,7 +1526,8 @@
 					if(tex[0].hasAttribute("inline")){
 						tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
 					}else{
-						tex[0].innerHTML = "<div style=\"text-align:center\">`"+tex[0].innerHTML+"`</div>";
+						tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
+						//tex[0].innerHTML = "<div style=\"text-align:center\">`"+tex[0].innerHTML+"`</div>";
 					}
 				}else{
 					if(tex[0].hasAttribute("inline")){
@@ -3676,7 +3677,7 @@
 				else if(isAsciiMathLine)
 				{
 					text = text.replace(/(\$([^\$]*)\$)+/g, function($1, $2) {
-						return "<span class=\"" + editormd.classNames.tex + "\" asciimath=1>" + $2.replace(/\$/g, "") + "</span>";
+						return "<p class=\"" + editormd.classNames.tex + "\" asciimath=1>" + $2.replace(/\$/g, "") + "</p>";
 					});	
 				}
             }
@@ -4113,11 +4114,22 @@
             var mathjaxHandle = function() {
                 div.find("." + editormd.classNames.tex).each(function(){
 					var tex  = $(this);
-					var mn = tex.html().replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-					console.log("mathjaxHandle:"+mn);
-					tex.html(mn);
-					MathJax.Typeset(tex[0]);
-                    tex.find(".katex").css("font-size", "1.6em");
+					if(tex[0].hasAttribute("asciimath")){
+						if(tex[0].hasAttribute("inline")){
+							tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
+						}else{
+							tex[0].innerHTML = "<div style=\"text-align:center\">`"+tex[0].innerHTML+"`</div>";
+						}
+					}else{
+						if(tex[0].hasAttribute("inline")){
+							tex[0].innerHTML = "\\("+tex[0].innerHTML+"\\)";
+						}else{
+							tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
+						}
+					}
+					editormd.$mathjax.Hub.Typeset(tex[0]);
+					
+                    //tex.find(".katex").css("font-size", "1.6em");
                 });
             };
             
