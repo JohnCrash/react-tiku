@@ -479,7 +479,7 @@ class TkFrame extends Component{
                 ref = {(iframe)=>{this.markd = iframe}}
                 content = {this.state.markd}
                 onkeyup = {this.handleKeyup.bind(this)}
-                height={this.state.iframeHeight<180?180:this.state.iframeHeight}>
+                height={this.state.iframeHeight<320?320:this.state.iframeHeight}>
                 </TkMarkd>;
             }
         }

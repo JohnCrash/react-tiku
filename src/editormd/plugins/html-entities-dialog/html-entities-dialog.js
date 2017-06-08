@@ -33,7 +33,7 @@
 			var dialogLang  = lang.dialog.htmlEntities;
 
 			var dialogContent = [
-				'<div class="' + classPrefix + 'html-entities-box" style=\"width: 760px;height: 334px;margin-bottom: 8px;overflow: hidden;overflow-y: auto;\">',
+				'<div class="' + classPrefix + 'html-entities-box" style=\"width: 920px;height: 180px;margin-bottom: 8px;overflow: hidden;overflow-y: auto;\">',
 				'<div class="' + classPrefix + 'grid-table">',
 				'</div>',
 				'</div>',
@@ -57,8 +57,8 @@
 				dialog = this.createDialog({
 					name       : dialogName,
 					title      : dialogLang.title,
-					width      : 800,
-					height     : 475,
+					width      : 960,
+					height     : 310,
 					mask       : settings.dialogShowMask,
 					drag       : settings.dialogDraggable,
 					content    : dialogContent,
@@ -89,7 +89,7 @@
 
 				if (entitiesData.length < 1) return ;
 
-				var rowNumber = 20;
+				var rowNumber = 36;
 				var pageTotal = Math.ceil(entitiesData.length / rowNumber);
 
 				table.html("");

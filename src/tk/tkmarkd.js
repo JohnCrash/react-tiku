@@ -33,9 +33,8 @@ function editormd(body,height){
             "bold", "del", "italic", "quote","|", 
             "h1", "h2", "h3", "|", 
             "list-ul", "list-ol", "hr", "|",
-            "link", "reference-link", "image", "code", "preformatted-text", "code-block", "table", "html-entities", "|",
-            "watch", "preview", "|",
-            "help"]
+            "link", "reference-link", "image", "table", "html-entities", "|",
+            "watch", "preview"]
                     },                    
                 });
             });
