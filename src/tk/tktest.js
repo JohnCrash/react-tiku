@@ -215,6 +215,7 @@ class TkTestDialog extends Component{
                 ref = {(iframe)=>{this.iframe = iframe}}
                 height = {this.state.iframeHeight}
                 style={{width:'100%',border:0}} 
+                scrolling={'no'}
                 srcDoc={content}>
                 </iframe>
             </Dialog>

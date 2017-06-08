@@ -67,6 +67,7 @@ class TkMarkd extends Component{
         if(this.iframe && this.iframe.contentDocument){
             this.markd = this.iframe.contentDocument.markd;
             this.markd.on('change',this.props.onkeyup);
+            this.iframe.contentDocument.body.onresize=this.handleSizeChange.bind(this);
         }
         if(this.props.onLoad){
             this.props.onLoad();
@@ -95,6 +96,9 @@ class TkMarkd extends Component{
         if(this.markd){
             this.markd.doFullScreen();
         }
+    }
+    handleSizeChange(){
+        this.doFullScreen();
     }
     render(){
        return <iframe

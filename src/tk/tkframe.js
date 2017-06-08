@@ -352,6 +352,7 @@ class TkFrame extends Component{
                     if(data!='ok'){
                         this.messageBar(data);
                     }else{
+                        this.setState({isContentChange:false});
                         this.messageBar('成功保存',1);
                     }
                 }.bind(this)).catch(function(e){
@@ -374,6 +375,7 @@ class TkFrame extends Component{
                     if(data!='ok'){
                         this.messageBar(data);
                     }else{
+                        this.setState({isMarkdContentChange:false});
                         this.messageBar('成功保存',1);
                     }
                 }.bind(this)).catch(function(e){
