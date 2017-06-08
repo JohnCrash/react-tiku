@@ -34,7 +34,7 @@ function editormd(body,height){
             "h1", "h2", "h3", "|", 
             "list-ul", "list-ol", "hr", "|",
             "link", "reference-link", "image", "code", "preformatted-text", "code-block", "table", "html-entities", "|",
-            "watch", "preview", "fullscreen", "|",
+            "watch", "preview", "|",
             "help"]
                     },                    
                 });
