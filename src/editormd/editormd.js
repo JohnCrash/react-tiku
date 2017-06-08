@@ -1537,8 +1537,18 @@
 					}
 				}
                 editormd.$mathjax.Hub.Typeset(tex[0]);
-				//editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
-				//tex.find(".katex").css("font-size", "1.6em");
+				/*
+				function showNode(node){
+					node.style.visibility = "";
+				}
+				function hideNode(node){
+					node.style.visibility = "hidden";
+				}				
+				editormd.$mathjax.Hub.queue.Push(
+				[hideNode,tex[0]],
+				["Typeset",editormd.$mathjax.Hub,tex[0]],
+				[showNode,tex[0]],
+				);*/
             }); 
 			return this;
 		},
@@ -4148,7 +4158,6 @@
 					}
 					editormd.$mathjax.Hub.Typeset(tex[0]);
 					//editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
-					
                     //tex.find(".katex").css("font-size", "1.6em");
                 });
             };
@@ -4339,7 +4348,17 @@
 	 * 加载MathJax文件
 	 */
     editormd.loadMathJax = function (callback) {
-        editormd.loadScript(editormd.mathjaxURL, callback || function(){});
+		var hook = function(){
+			//关闭公式的右键菜单，不显示消息处理提示
+			MathJax.Hub.Config({
+				showProcessingMessages: false,
+				"HTML-CSS":{
+					showMathMenu:false
+				}					
+				});
+			if(callback)callback();
+		}
+        editormd.loadScript(editormd.mathjaxURL, hook || function(){});
     };
     	 
     /**
