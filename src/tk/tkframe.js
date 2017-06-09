@@ -48,10 +48,14 @@ function forChildren(node,cb){
 /**
  * 具体的html编辑
  * type = (0:image,1:body,2:answer,3:analysis)
+ * qid (问题id)
  * topicsType = (1选择题，2填空题，3解答题，4其他，－1忽略，0未处理)
  * content = (html content)
+ * markd = (markd content)
+ * source = (source html content)
+ * seat = (0.source,1.content,2.markd)
+ * answer (为了分析交互答案)
  * title = (标题)
- * hasBody = (如果以前编辑过就会有body)
  */
 class TkFrame extends Component{
 	constructor(){
@@ -66,15 +70,15 @@ class TkFrame extends Component{
             openTestDialog:false,
             testContent:"",
             mode:"html",
+            content:'',
             markd:"",
+            seat:0,
             isMarkdContentChange:false,
         }; 
 	}
     componentWillMount(){
-        console.log('componentWillMount');
     }
     componentDidMount(){
-        console.log('componentDidMount');
     }
     componentWillReceiveProps(nextProps){
         if(this.props.qid!=nextProps.qid){
@@ -96,17 +100,29 @@ class TkFrame extends Component{
             }
             //确定模式
             let mode = "html";
-            if(nextProps.markd && nextProps.markd.length>0){
-                mode = "markd";
+            let content = "";
+            if('seat' in nextProps){
+                if(nextProps.seat==0){
+                    content = nextProps.source;
+                }else if(nextProps.seat==1){
+                    content = nextProps.content;
+                }else if(nextProps.seat==2){
+                    mode = "markd";
+                }else{
+                    content = nextProps.source;
+                }
+            }else{
+                content = nextProps.content;
             }
             this.setState({isContentChange:false,//新加载都是没有改变
                 topicsType:nextProps.topicsType,
                 mode:mode,
+                content:content,
+                seat:nextProps.seat,
                 markd:nextProps.markd});
         }
     }
     componentWillUnmount(){
-        console.log('componentWillUnmount');
     }
     handleHTMLContent(){
         this.setState({expendHTML:!this.state.expendHTML});
@@ -121,7 +137,7 @@ class TkFrame extends Component{
             height = this.markd.getHeight();
             this.markd.doFullScreen();
         }
-        this.setState({iframeHeight:height});        
+        this.setState({iframeHeight:height<32?32:height});        
     }
     onHtmlContentChange(content){
         //去掉内部操作用的JavaScript代码,见tkeditor.toHtmlDocument
@@ -325,9 +341,11 @@ class TkFrame extends Component{
     handleReset(){
         if(this.state.mode=="html"){
             this.isIFrameLoad = false;
-            this.iframe.srcdoc = this.props.content;
+            this.iframe.srcdoc = this.props.source;
             this.checkChange();
         }else{//markd
+            this.setState({isMarkdContentChange:true,
+                markd:this.props.markd});
         }
     }
     messageBar(msg,p){
@@ -340,13 +358,33 @@ class TkFrame extends Component{
             if(this.state.isContentChange){
                 //因为使用handleKeyup不能侦测到全部的改变，这里强制更新
                 this.onHtmlContentChange(this.body.outerHTML);
-
+                var updateData = {};
+                switch(this.props.type){
+                    case 1: //body
+                        updateData.state = this.state.topicsType;
+                        updateData.seat_body = 1;
+                        updateData.body = this.state.htmlContent;
+                        break;
+                    case 2: //answer
+                        updateData.seat_answer = 1;
+                        updateData.answer = this.state.htmlContent;
+                        break;
+                    case 3: //analysis
+                        updateData.seat_analysis = 1;
+                        updateData.analysis = this.state.htmlContent;
+                        break;
+                    case 4: //tag
+                        updateData.seat_tag = 1;
+                        updateData.tag = this.state.htmlContent;
+                        break;
+                }
+                /**
+                 * 如果html模式下确保情况对应markd格式的数据
+                 */
                 fetch(`upload?QuestionID=${this.props.qid}`,
                     {method:'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body:JSON.stringify({
-                        state:this.state.topicsType,
-                        body:this.state.htmlContent})}).then(function(responese){
+                    body:JSON.stringify(updateData)}).then(function(responese){
                     return responese.text();
                 }).then(function(data){
                     if(data!='ok'){
@@ -363,15 +401,30 @@ class TkFrame extends Component{
             }
         }else{//markd
             if(this.state.isMarkdContentChange){
+                var updateData = {};
+                switch(this.props.type){
+                    case 1: //body
+                        updateData.seat_body = 2;
+                        updateData.state = this.state.topicsType;
+                        updateData.markd_body = this.markd.getMarkdown();
+                        break;
+                    case 2: //answer
+                        updateData.seat_answer = 2;
+                        updateData.markd_answer = this.markd.getMarkdown();
+                        break;
+                    case 3: //analysis
+                        updateData.seat_analysis = 2;
+                        updateData.markd_analysis = this.markd.getMarkdown();
+                        break;
+                    case 4: //tag
+                        updateData.seat_tag = 2;
+                        updateData.markd_tag = this.markd.getMarkdown();
+                        break;
+                }              
                 fetch(`upload?QuestionID=${this.props.qid}`,
                     {method:'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body:JSON.stringify({
-                        state:this.state.topicsType,
-                        markd_body:this.props.type==1?this.markd.getMarkdown():undefined,
-                        markd_answer:this.props.type==2?this.markd.getMarkdown():undefined,
-                        markd_analysis:this.props.type==3?this.markd.getMarkdown():undefined,
-                        markd_tag:this.props.type==4?this.markd.getMarkdown():undefined})}).then(function(responese){
+                    body:JSON.stringify(updateData)}).then(function(responese){
                     return responese.text();
                 }).then(function(data){
                     if(data!='ok'){
@@ -392,12 +445,14 @@ class TkFrame extends Component{
     handleLoadPrev(){
         if(this.state.mode=="html"){
             this.isIFrameLoad = false;
-            this.iframe.srcdoc = this.props.hasBody?this.props.body:this.props.content;
+            this.iframe.srcdoc = this.props.content;
             this.setState({
                 topicsType:this.props.topicsType,
                 isContentChange:false});
         }else{//markd
-            this.markd.getHTML();
+            this.isIFrameLoad = false;
+            this.setState({isMarkdContentChange:true,
+                markd:this.props.markd});
         }
     }
     //使用keyup事件跟踪文档的变化
@@ -448,9 +503,13 @@ class TkFrame extends Component{
     handleMarkdown(){
         if(this.state.mode=="markd"){
             this.state.markd = this.markd.getMarkdown();
-            this.setState({mode:"html",isContentChange:true});
+            this.setState({mode:"html",
+            isContentChange:true,
+            seat:1});
         }else if(this.state.mode=="html"){
-            this.setState({mode:"markd",isContentChange:true});
+            this.setState({mode:"markd",
+            isMarkdContentChange:true,
+            seat:2});
         }
     }
 	render(){
@@ -474,7 +533,7 @@ class TkFrame extends Component{
                 ref = {(iframe)=>{this.iframe = iframe}}
                 height = {this.state.iframeHeight}
                 style={{width:'100%',border:0}} 
-                srcDoc={this.props.hasBody?this.props.body:this.props.content}>
+                srcDoc={this.state.content}>
                 </iframe>);
             }else if(this.state.mode=="markd"){
                 content = <TkMarkd 

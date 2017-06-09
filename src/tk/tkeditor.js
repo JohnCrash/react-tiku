@@ -31,22 +31,28 @@ class TkEditor extends Component{
             errorMsg:'',
 			topicsNumber:'',
 			image:'',
-			topic:'',
-			answer:'',
-			analysis:'',
-			tag:'',
 			css:'',
 			source:'',
 			qid:-1,
-			body:'',
 			tid:'',
 			topicsType:-1,
-			hasBody:false,
 			messageColor:warningColor,
+			body:'',
+			answer:'',
+			analysis:'',
+			tag:'',			
 			markd_body:'',
 			markd_answer:'',
 			markd_analysis:'',
 			markd_tag:'',
+			source_body:'',
+			source_answer:'',
+			source_analysis:'',
+			source_tag:'',			
+			seat_body:'',
+			seat_answer:'',
+			seat_analysis:'',
+			seat_tag:'',			
 		}
 	}
 	//弹出一个错误条
@@ -148,25 +154,29 @@ class TkEditor extends Component{
 			this.error = data;
 			this.currentTopic = JSON.parse(data);
 			let css = this.currentTopic.topic_css;
-			//如果body有内容，并且state是(1选择题，2填空题，3解答题)之一
-			let hasBody = this.currentTopic.state>=1 && this.currentTopic.state<=3 && this.currentTopic.body;
+
 			this.setState({
-			hasBody:hasBody,
-			topic:this.toHtmlDocument(css,this.currentTopic.topic_body),
 			body:this.toHtmlDocument(css,this.currentTopic.body),
-			answer:this.toHtmlDocument(css,this.currentTopic.topic_answer),
-			analysis:this.toHtmlDocument(css,this.currentTopic.topic_analysis),
+			answer:this.toHtmlDocument(css,this.currentTopic.answer),
+			analysis:this.toHtmlDocument(css,this.currentTopic.analysis),
+			tag:this.currentTopic.topic_tag,
 			image:this.currentTopic.topic_image,
 			css:css,
-			tag:this.currentTopic.topic_tag,
-			source:this.currentTopic.source,
+			source_body:this.toHtmlDocument(css,this.currentTopic.topic_body),
+			source_answer:this.toHtmlDocument(css,this.currentTopic.topic_answer),
+			source_analysis:this.toHtmlDocument(css,this.currentTopic.topic_analysis),
+			source_tag:this.currentTopic.topic_tag,
 			tid:this.currentTopic.tid,
 			qid:QuestionID,
 			topicsType:this.currentTopic.state,
 			markd_body:this.currentTopic.markd_body,
 			markd_analysis:this.currentTopic.markd_analysis,
 			markd_answer:this.currentTopic.markd_answer,
-			markd_tag:this.currentTopic.markd_tag});
+			markd_tag:this.currentTopic.markd_tag,
+			seat_body:this.currentTopic.seat_body,
+			seat_analysis:this.currentTopic.seat_analysis,
+			seat_answer:this.currentTopic.seat_answer,
+			seat_tag:this.currentTopic.seat_tag});
 		}.bind(this)).catch(function(e){
 			if(this.error){
 				this.messageBar(this.error);
@@ -188,7 +198,8 @@ class TkEditor extends Component{
 			if(this.curTopicsIndex===1){
 				this.loadTopic(this.currentUnit[this.curTopicsIndex-1].QuestionID);
 			}else{
-				this.setState({topic:'',
+				this.setState({
+				body:'',
 				answer:'',
 				analysis:'',
 				image:''});
@@ -232,31 +243,37 @@ class TkEditor extends Component{
 					messageBar={this.messageBar.bind(this)}/>
 				<TkFrame title='原题' content={this.state.image} source={this.state.source} tid={this.state.tid} type={0}/>
 				<TkFrame title='题目' messageBar={this.messageBar.bind(this)}
-					content={this.state.topic}
-					answer={this.state.answer}
+					seat = {this.state.seat_body}
+					source = {this.state.source_body}
+					content={this.state.body}
 					markd={this.state.markd_body}
+					answer={this.state.answer}
 					type={1}
-					hasBody={this.state.hasBody}
 					qid={this.state.qid}
-					body={this.state.body}
 					topicsType={this.state.topicsType}/>
 				<TkFrame title='解答' 
+					seat = {this.state.seat_answer}
+					source = {this.state.source_answer}
+					content={this.state.answer} 
 					markd={this.state.markd_answer}
 					messageBar={this.messageBar.bind(this)}
 					qid={this.state.qid}
-				 	content={this.state.answer} 
 					type={2}/>
 				<TkFrame title='分析' 
+					seat = {this.state.seat_analysis}
+					source = {this.state.source_analysis}
+					content={this.state.analysis} 
 					markd={this.state.markd_analysis}
 					messageBar={this.messageBar.bind(this)} 
 					qid={this.state.qid}
-					content={this.state.analysis} 
 					type={3}/>
 				<TkFrame title='知识点' 
+					seat = {this.state.seat_tag}
+					source = {this.state.source_tag}
+					content={this.state.tag}
 					markd={this.state.markd_tag}
 					messageBar={this.messageBar.bind(this)}
 					qid={this.state.qid}
-					content={this.state.tag}
 					type={4}/>
 				<Snackbar open={this.state.errorOpen} 
 				bodyStyle={{backgroundColor:this.state.messageColor}}
