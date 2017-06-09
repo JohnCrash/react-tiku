@@ -368,8 +368,10 @@ class TkFrame extends Component{
                     headers: {'Content-Type': 'application/json'},
                     body:JSON.stringify({
                         state:this.state.topicsType,
-                        body:this.markd.getHTML(),
-                        markd_body:this.markd.getMarkdown()})}).then(function(responese){
+                        markd_body:this.props.type==1?this.markd.getMarkdown():undefined,
+                        markd_answer:this.props.type==2?this.markd.getMarkdown():undefined,
+                        markd_analysis:this.props.type==3?this.markd.getMarkdown():undefined,
+                        markd_tag:this.props.type==4?this.markd.getMarkdown():undefined})}).then(function(responese){
                     return responese.text();
                 }).then(function(data){
                     if(data!='ok'){
@@ -446,9 +448,9 @@ class TkFrame extends Component{
     handleMarkdown(){
         if(this.state.mode=="markd"){
             this.state.markd = this.markd.getMarkdown();
-            this.setState({mode:"html"});
+            this.setState({mode:"html",isContentChange:true});
         }else if(this.state.mode=="html"){
-            this.setState({mode:"markd"});
+            this.setState({mode:"markd",isContentChange:true});
         }
     }
 	render(){
@@ -465,7 +467,7 @@ class TkFrame extends Component{
             </p>;
             tool = <a href="javascript:;" onClick={this.handlePopUrl.bind(this)}>{this.props.tid}</a>;
         }
-        if(this.props.type>=1 && this.props.type<=3){
+        if(this.props.type>=1 && this.props.type<=4){
             if(this.state.mode=="html"){
                 content = (<iframe
                 onLoad={this.handleLoad.bind(this)}
@@ -485,7 +487,7 @@ class TkFrame extends Component{
                 </TkMarkd>;
             }
         }
-        if(this.props.type==1){
+        if(this.props.type>=1 && this.props.type<=4){
                 let c;
                 if(this.state.mode=="html"){
                     c = this.state.isContentChange?warningColor:toolbarIconColor;
@@ -501,14 +503,18 @@ class TkFrame extends Component{
                     </IconButton>,                    
                     <IconButton tooltip='存储入库' onClick={this.handleUpload.bind(this)}>
                         <TkUpload  color={c}/>
-                    </IconButton>,    
-                    <IconButton tooltip='交互测试' onClick={this.handleTest.bind(this)}>
-                        <TkTest  color={toolbarIconColor}/>
-                    </IconButton>,   
+                </IconButton>];
+                if(this.props.type==1){
+                    saveTool.push( 
+                        <IconButton tooltip='交互测试' onClick={this.handleTest.bind(this)}>
+                            <TkTest  color={toolbarIconColor}/>
+                        </IconButton>);
+                }
+                saveTool.push(
                     <IconButton tooltip='切换Markdown' onClick={this.handleMarkdown.bind(this)}>
                         <TkMarkdown  color={toolbarIconColor}/>
-                    </IconButton>,                                                     
-                    <ToolbarSeparator />];
+                    </IconButton>);                                                    
+                saveTool.push(<ToolbarSeparator/>);
             if((this.state.topicsType==1 ||this.state.topicsType==2)&&this.state.mode=="html"){
                 tool = [];
                 if(this.state.topicsType==1){
@@ -570,9 +576,10 @@ class TkFrame extends Component{
                     <MenuItem value={0} primaryText="未处理" />
                 </DropDownMenu>
                 }
-                <IconButton touch={true} onTouchTap={this.handleHTMLContent.bind(this)}>
-                    <CodeIcon />
-                </IconButton>
+                {this.state.mode=="html"?
+                    <IconButton touch={true} onTouchTap={this.handleHTMLContent.bind(this)}>
+                        <CodeIcon />
+                    </IconButton>:undefined}
                 </ToolbarGroup>                
             </Toolbar>
             <TkHtmlViewer expend={this.state.expendHTML}>{this.state.htmlContent}</TkHtmlViewer>
