@@ -273,7 +273,7 @@ class TkFrame extends Component{
                 }
             this.setState({topicsType:value});}).bind(this),100);
         }else{//markd
-            this.setState({topicsType:value});
+            this.setState({isMarkdContentChange:true,topicsType:value});
         }
     }
     //将选择的内容转换为交互按键

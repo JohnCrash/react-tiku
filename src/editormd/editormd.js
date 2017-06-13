@@ -3688,9 +3688,9 @@
 						 var m = op.match(/([ABCDEF])(\)?)\. /);
 						 if(m){
 							 if(m[2]===')'){
-								 return `<span option-correct="${m[1]}" onclick="option_onclick(this);">${t}</span><br>`;
+								 return `<span option-correct="${m[1]}" onclick="option_onclick(this);">${m[1]}. ${t}</span><br>`;
 							 }else{
-								 return `<span option-btn="${m[1]}" onclick="option_onclick(this);">${t}</span><br>`;
+								 return `<span option-btn="${m[1]}" onclick="option_onclick(this);">${m[1]}. ${t}</span><br>`;
 							 }
 						 }
 						 return "<br>";
@@ -3731,27 +3731,35 @@
 			 */
 			 {
 				 if(/\(\(.*?\)[1-9]?[1-9]?\)/.test(text)){
-					var strwidth = function(v){
+					var strwidth = function(v){ //计算字符串的宽度
 						var s = 2*v.length;
 						v.replace(/[^\w]*(\w*)[^\w]*/g,function($1,$2){
 							s -= $2.length;
 						});
-						return s;
+						return s+1;
 					};
-					text = text.replace(/\(\((.*?)\)([1-9]?[1-9]?)\)/g,function($1,$2,$3){
-						if(/.*\(\(.*/.test($2)){
-							return $2.replace(/(.*)\(\((.*)/,function($1,$2,$3){
-								var s = strwidth($3);
-								return `((${$2}<input type="text" size="${s}" answer-feild="${$3}" value="${$3}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
-							});
-						}else{
-							var s = $3>strwidth($2)?$3:strwidth($2);
-							if(s==0 || s==""){
-								s = 5;
-							}
-							return `<input type="text" size="${s}" answer-feild="${$2}" value="${$2}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
-						}
-					});
+					var proccess = function(seg,ss){//对被$或者$$切分的字符串数组进行处理。
+						var result = "";
+						 for(let i=0;i<seg.length;i++){
+							 if(i%2==0){
+								 result += seg[i].replace(/\(\((.*?)\)([1-9]?[1-9]?)\)/g,function($1,$2,$3){
+									var s = $3>strwidth($2)?$3:strwidth($2);
+									s = s==0||s==""?5:s;
+									return `<input type="text" size="${s}" answer-feild="${$2}" value="${$2}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
+								});
+							 }else{
+								 result += (ss+seg[i]+ss);
+							 }
+						 }		
+						return result;
+					}
+					 var seg = text.split("$$");
+					 if(seg.length>1){
+						 text = proccess(seg,"$$");
+					 }else{
+						 seg = text.split("$");
+						 text = proccess(seg,"$");
+					 }
 				 }
 			 }
 			/**
@@ -3761,27 +3769,34 @@
 			 */
 			 {
 				 if(/\[\[.*?\][1-9]?[1-9]?\]/.test(text)){
-					var strwidth = function(v){
+					var strwidth = function(v){ //计算字符串的宽度
 						var s = 2*v.length;
 						v.replace(/[^\w]*(\w*)[^\w]*/g,function($1,$2){
 							s -= $2.length;
 						});
-						return s;
+						return s+1;
 					};
-					text = text.replace(/\[\[(.*?)\]([1-9]?[1-9]?)\]/g,function($1,$2,$3){
-						if(/.*\(\(.*/.test($2)){
-							return $2.replace(/(.*)\[\[(.*)/,function($1,$2,$3){
-								var s = strwidth($3);
-								return `((${$2}<input type="text" size="${s}" answer-feild="${$3}" value="${$3}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
-							});
-						}else{
-							var s = $3>strwidth($2)?$3:strwidth($2);
-							if(s==0 || s==""){
-								s = 5;
-							}
-							return `<input type="text" size="${s}" answer-feild="${$2}" value="${$2}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
-						}
-					});
+					var proccess = function(seg,ss){//对被$或者$$切分的字符串数组进行处理。
+						var result = "";
+						 for(let i=0;i<seg.length;i++){
+							 if(i%2==0){
+								 result += seg[i].replace(/\[\[(.*?)\]([1-9]?[1-9]?)\]/g,function($1,$2,$3){
+									var s = $3;
+									return `<textarea type="text" size="${s}" cols="80" rows="${s}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);">${$2}</textarea>`;
+								});
+							 }else{
+								 result += (ss+seg[i]+ss);
+							 }
+						 }		
+						return result;
+					}
+					 var seg = text.split("$$");
+					 if(seg.length>1){
+						 text = proccess(seg,"$$");
+					 }else{
+						 seg = text.split("$");
+						 text = proccess(seg,"$");
+					 }
 				 }
 			 }			 
 			/**
