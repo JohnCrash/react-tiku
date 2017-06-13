@@ -21,6 +21,7 @@ class TkTestDialog extends Component{
       return `<html>
 		<head>
             <link rel="stylesheet" type="text/css" href="editormd/css/editormd.preview.css">
+            <link rel="stylesheet" type="text/css" href="css/topics.css">
 		</head>
         <body>
             <div id="layout">

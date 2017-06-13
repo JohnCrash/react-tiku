@@ -6,6 +6,7 @@ function editormd(body,height){
     <head>
         <meta charset="utf-8" />
         <link rel="stylesheet" href="editormd/css/editormd.css" />
+        <link rel="stylesheet" type="text/css" href="css/topics.css">
     </head>
     <body>
         <div id="layout">

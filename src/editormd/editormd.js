@@ -3677,40 +3677,160 @@
         };
 
         markedRenderer.paragraph = function(text) {
-            var isTeXInline     = /\$\$(.*)\$\$/g.test(text);
-            var isTeXLine       = /^\$\$(.*)\$\$$/.test(text);
-            var isTeXAddClass   = (isTeXLine)     ? " class=\"" + editormd.classNames.tex + "\"" : "";
-            var isToC           = (settings.tocm) ? /^(\[TOC\]|\[TOCM\])$/.test(text) : /^\[TOC\]$/.test(text);
-            var isToCMenu       = /^\[TOCM\]$/.test(text);
+			/**
+			 * 做选择题处理
+			 * 选择题判断条件，1必须至少有三个可选项ABC,2必须是以A. ,B. ,这样开头注意后面有一个空格,正确答案字母后面加),例如A). 
+			 * 如果首字母是X和V将被认为是对错题。
+			 */
+			 {
+				 if(/A\)?. /.test(text) && /<br>B\)?. /.test(text) && /<br>C\)?. /.test(text)){
+					 var build_option = function(op,t){
+						 var m = op.match(/([ABCDEF])(\)?)\. /);
+						 if(m){
+							 if(m[2]===')'){
+								 return `<span option-correct="${m[1]}" onclick="option_onclick(this);">${t}</span><br>`;
+							 }else{
+								 return `<span option-btn="${m[1]}" onclick="option_onclick(this);">${t}</span><br>`;
+							 }
+						 }
+						 return "<br>";
+					 };					 
+					 if(/<br>D\)?. /.test(text)){
+						 if(/<br>E\)?. /.test(text)){
+							 if(/<br>F\)?. /.test(text)){
+								 //ABCDEF,最大支持到F,也就是6个选择
+								 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)<br>(F\)?. )(.*)/,
+									function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13){
+									 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11)+build_option($12,$13);
+								 });									 
+							 }else{
+								 //ABCDE
+								 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)/,
+									function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11){
+									 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11);
+								 });								 
+							 }
+						 }else{
+							 //ABCD
+							 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7,$8,$9){
+								 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9);
+							 });							 
+						 }
+					 }else{
+						 //ABC
+						 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7){
+							 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7);
+						 });
+					 }
+				 }
+			 }
+			/**
+			 * 填空题处理
+			 * 形如下面的形式被当成填空(()),答案可以放中间例如((A)),第一个)后面加数字可以增加填空线的长度,1-9.不加默认长度.
+			 * 例如((A)3)
+			 */
+			 {
+				 if(/\(\(.*?\)[1-9]?[1-9]?\)/.test(text)){
+					var strwidth = function(v){
+						var s = 2*v.length;
+						v.replace(/[^\w]*(\w*)[^\w]*/g,function($1,$2){
+							s -= $2.length;
+						});
+						return s;
+					};
+					text = text.replace(/\(\((.*?)\)([1-9]?[1-9]?)\)/g,function($1,$2,$3){
+						if(/.*\(\(.*/.test($2)){
+							return $2.replace(/(.*)\(\((.*)/,function($1,$2,$3){
+								var s = strwidth($3);
+								return `((${$2}<input type="text" size="${s}" answer-feild="${$3}" value="${$3}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
+							});
+						}else{
+							var s = $3>strwidth($2)?$3:strwidth($2);
+							if(s==0 || s==""){
+								s = 5;
+							}
+							return `<input type="text" size="${s}" answer-feild="${$2}" value="${$2}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
+						}
+					});
+				 }
+			 }
+			/**
+			 * 解答题处理
+			 * 形如[[]]，前两个[[加后两个]]。中间可以放答案[[A]]这表示一个解答题，如果后面]加入数字表示行数.
+			 * [[A]2]
+			 */
+			 {
+				 if(/\[\[.*?\][1-9]?[1-9]?\]/.test(text)){
+					var strwidth = function(v){
+						var s = 2*v.length;
+						v.replace(/[^\w]*(\w*)[^\w]*/g,function($1,$2){
+							s -= $2.length;
+						});
+						return s;
+					};
+					text = text.replace(/\[\[(.*?)\]([1-9]?[1-9]?)\]/g,function($1,$2,$3){
+						if(/.*\(\(.*/.test($2)){
+							return $2.replace(/(.*)\[\[(.*)/,function($1,$2,$3){
+								var s = strwidth($3);
+								return `((${$2}<input type="text" size="${s}" answer-feild="${$3}" value="${$3}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
+							});
+						}else{
+							var s = $3>strwidth($2)?$3:strwidth($2);
+							if(s==0 || s==""){
+								s = 5;
+							}
+							return `<input type="text" size="${s}" answer-feild="${$2}" value="${$2}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);"></input>`;
+						}
+					});
+				 }
+			 }			 
+			/**
+			 * 排序题处理
+			 */
+			 
+			/**
+			 * 连线题
+			 * 2-. 
+			 */
+			 
+			 /**
+			  * 处理数学公式
+			  */
+			 {
+				var isTeXInline     = /\$\$(.*)\$\$/g.test(text);
+				var isTeXLine       = /^\$\$(.*)\$\$$/.test(text);
+				var isTeXAddClass   = (isTeXLine)     ? " class=\"" + editormd.classNames.tex + "\"" : "";
+				var isToC           = (settings.tocm) ? /^(\[TOC\]|\[TOCM\])$/.test(text) : /^\[TOC\]$/.test(text);
+				var isToCMenu       = /^\[TOCM\]$/.test(text);
 
-			if (!isTeXLine && isTeXInline) 
-            {
-				text = text.replace(/(\$\$([^\$]*)\$\$)+/g, function($1, $2) {
-					return "<span class=\"" + editormd.classNames.tex + "\" inline=1>" + $2.replace(/\$/g, "") + "</span>";
-				});					
-            } 
-            else 
-            {	
-				var isAsciiMathInline = /\$(.*)\$/g.test(text);
-				var isAsciiMathLine   = /^\$(.*)\$$/.test(text);
-				
-				if(isTeXLine && isTeXInline){
-					text = text.replace(/\$/g, "");
-				}
-				else if(!isAsciiMathLine && isAsciiMathInline)
+				if (!isTeXLine && isTeXInline) 
 				{
-					text = text.replace(/(\$([^\$]*)\$)+/g, function($1, $2) {
-						return "<span class=\"" + editormd.classNames.tex + "\" asciimath=1 inline=1>" + $2.replace(/\$/g, "") + "</span>";
-					});	
-				}
-				else if(isAsciiMathLine)
-				{
-					text = text.replace(/(\$([^\$]*)\$)+/g, function($1, $2) {
-						return "<p class=\"" + editormd.classNames.tex + "\" asciimath=1>" + $2.replace(/\$/g, "") + "</p>";
-					});	
-				}
-            }
-			
+					text = text.replace(/(\$\$([^\$]*)\$\$)+/g, function($1, $2) {
+						return "<span class=\"" + editormd.classNames.tex + "\" inline=1>" + $2.replace(/\$/g, "") + "</span>";
+					});					
+				} 
+				else 
+				{	
+					var isAsciiMathInline = /\$(.*)\$/g.test(text);
+					var isAsciiMathLine   = /^\$(.*)\$$/.test(text) && !/^\$(.*)\$(.*)\$(.*)\$$/.test(text);
+					
+					if(isTeXLine && isTeXInline){
+						text = text.replace(/\$/g, "");
+					}
+					else if(!isAsciiMathLine && isAsciiMathInline)
+					{
+						text = text.replace(/(\$([^\$]*)\$)+/g, function($1, $2) {
+							return "<span class=\"" + editormd.classNames.tex + "\" asciimath=1 inline=1>" + $2.replace(/\$/g, "") + "</span>";
+						});	
+					}
+					else if(isAsciiMathLine)
+					{
+						text = text.replace(/(\$([^\$]*)\$)+/g, function($1, $2) {
+							return "<p class=\"" + editormd.classNames.tex + "\" asciimath=1>" + $2.replace(/\$/g, "") + "</p>";
+						});	
+					}
+				}	
+			 }			
             var tocHTML = "<div class=\"markdown-toc editormd-markdown-toc\">" + text + "</div>";
             
             return (isToC) ? ( (isToCMenu) ? "<div class=\"editormd-toc-menu\">" + tocHTML + "</div><br/>" : tocHTML )

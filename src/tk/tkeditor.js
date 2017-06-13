@@ -76,6 +76,7 @@ class TkEditor extends Component{
 			<link rel="stylesheet" type="text/css" href="css/reset.css">
 			<link rel="stylesheet" type="text/css" href="css/style.css">
 			<link rel="stylesheet" type="text/css" href="css/ti.css">
+			<link rel="stylesheet" type="text/css" href="css/topics.css">
 		</head>
 		<body>${newbody}</body>
 		<script inner-script>
