@@ -36,7 +36,7 @@ function editormd(body,height){
             "list-ul", "list-ol", "hr", "|",
             "link", "reference-link", "image", "table", "html-entities", "|",
             "watch", "preview"]
-                    },                    
+                    }               
                 });
             });
         </script>

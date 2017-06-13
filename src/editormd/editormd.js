@@ -1513,7 +1513,7 @@
 		 * 解析Tex(MathJax)数学公式
 		 * TeX(MathJax) renderer
 		 */
-		mathjaxRender : function() {
+		mathjaxRender : function(cb) {
 
 			if (timer === null)
             {
@@ -1536,7 +1536,7 @@
 						tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
 					}
 				}
-                editormd.$mathjax.Hub.Typeset(tex[0]);
+                editormd.$mathjax.Hub.Typeset(tex[0],cb);
 				/*
 				function showNode(node){
 					node.style.visibility = "";
@@ -2155,11 +2155,37 @@
                 {
                     $.proxy(settings.onchange, this)();
                 }
+				//自动对齐
+				//this.onpreviewchange();
             }
 
             return this;
         },
         
+		onpreviewchange:function(){
+			/**
+			 * 这里对选择题的按钮做等宽操作
+			 */
+			var id;
+			var cb = function(){
+				var ops = $("[option-btn]");
+				var opc = $("[option-correct]");
+				var mw = 0;
+				for(let i=0;i<ops.length;i++){
+					mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
+				}	
+				for(let i=0;i<opc.length;i++){
+					mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
+				}
+				if(mw>16){
+					ops.width(mw);				
+					opc.width(mw);		
+				}
+				clearInterval(id);
+			}
+			id = setInterval(cb,500);
+		},
+		
         /**
          * 聚焦光标位置
          * Focusing the cursor position
