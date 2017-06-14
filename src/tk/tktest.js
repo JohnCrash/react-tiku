@@ -190,7 +190,7 @@ class TkTestDialog extends Component{
         var id = setInterval((()=>{
             clearInterval(id);
             this.recalcIFrameSize();
-        }).bind(this),100);
+        }).bind(this),510);
         this.recalcIFrameSize();
     }
     handleCommit(){

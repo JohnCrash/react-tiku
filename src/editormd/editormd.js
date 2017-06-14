@@ -2203,7 +2203,7 @@
 						clearInterval(_this.swapID);
 						_this.swapID = undefined;
 					};
-					this.swapID = setInterval(cb,300);
+					this.swapID = setInterval(cb,500);
 				}
             }
 
@@ -3752,7 +3752,7 @@
 			 * 如果首字母是X和V将被认为是对错题。
 			 */
 			 {
-				 if(/A\)?. /.test(text) && /<br>B\)?. /.test(text) && /<br>C\)?. /.test(text)){
+				 if(/A\)?. /.test(text) && /<br>B\)?. /.test(text)){
 					 var build_option = function(op,t){
 						 var m = op.match(/([ABCDEF])(\)?)\. /);
 						 if(m){
@@ -3764,32 +3764,39 @@
 						 }
 						 return "<br>";
 					 };					 
-					 if(/<br>D\)?. /.test(text)){
-						 if(/<br>E\)?. /.test(text)){
-							 if(/<br>F\)?. /.test(text)){
-								 //ABCDEF,最大支持到F,也就是6个选择
-								 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)<br>(F\)?. )(.*)/,
-									function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13){
-									 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11)+build_option($12,$13);
-								 });									 
+					 if(/<br>C\)?. /.test(text)){
+						 if(/<br>D\)?. /.test(text)){
+							 if(/<br>E\)?. /.test(text)){
+								 if(/<br>F\)?. /.test(text)){
+									 //ABCDEF,最大支持到F,也就是6个选择
+									 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)<br>(F\)?. )(.*)/,
+										function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13){
+										 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11)+build_option($12,$13);
+									 });									 
+								 }else{
+									 //ABCDE
+									 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)/,
+										function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11){
+										 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11);
+									 });								 
+								 }
 							 }else{
-								 //ABCDE
-								 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)/,
-									function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11){
-									 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11);
-								 });								 
+								 //ABCD
+								 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7,$8,$9){
+									 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9);
+								 });							 
 							 }
 						 }else{
-							 //ABCD
-							 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7,$8,$9){
-								 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9);
-							 });							 
+							 //ABC
+							 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7){
+								 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7);
+							 });
 						 }
 					 }else{
-						 //ABC
-						 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7){
-							 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7);
-						 });
+						 //AB
+						 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)/,function($1,$2,$3,$4,$5){
+							 return build_option($2,$3)+build_option($4,$5);
+						 });						 
 					 }
 				 }
 			 }
@@ -4383,7 +4390,25 @@
         div.getMarkdown = function() {            
             return saveTo.val();
         };
-        
+		
+		//预览markd，最后都文档做一些处理
+		var previewDone = function(){
+			var ops = $("[option-btn]");
+			var opc = $("[option-correct]");
+			var mw = 0;
+			for(let i=0;i<ops.length;i++){
+				mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
+			}	
+			for(let i=0;i<opc.length;i++){
+				mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
+			}
+			if(mw>16+40){
+				ops.width(mw-40);				
+				opc.width(mw-40);		
+			}
+		};
+		
+		previewDone();
         return div;
     };
     
