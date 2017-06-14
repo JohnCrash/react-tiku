@@ -418,7 +418,7 @@
             var appendElements = [
                 (!settings.readOnly) ? "<a href=\"javascript:;\" class=\"fa fa-close " + classPrefix + "preview-close-btn\"></a>" : "",
                 ( (settings.saveHTMLToTextarea) ? "<textarea class=\"" + classNames.textarea.html + "\" name=\"" + id + "-html-code\"></textarea>" : "" ),
-                "<div class=\"" + classPrefix + "preview\"><div class=\"markdown-body " + classPrefix + "preview-container\"></div></div>",
+                "<div class=\"" + classPrefix + "preview\"><div class=\"markdown-body " + classPrefix + "preview-container\"></div><div class=\"markdown-body " + classPrefix + "preview-container\"></div></div>",
                 "<div class=\"" + classPrefix + "container-mask\" style=\"display:block;\"></div>",
                 "<div class=\"" + classPrefix + "mask\"></div>"
             ].join("\n");
@@ -445,8 +445,12 @@
             
             this.htmlTextarea     = editor.children("." + classNames.textarea.html);            
             this.preview          = editor.children("." + classPrefix + "preview");
-            this.previewContainer = this.preview.children("." + classPrefix + "preview-container");
-            
+			//使用双缓冲区来处理屏幕编辑过程中屏幕的闪动问题
+            this.previewContainer = this.preview.children("." + classPrefix + "preview-container:first");
+			this.previewContainer2 = this.preview.children("." + classPrefix + "preview-container:last");
+			this.previewContainer2.hide();
+			this.previewCurrent = 0;
+			
             if (settings.previewTheme !== "") 
             {
                 this.preview.addClass(classPrefix + "preview-theme-" + settings.previewTheme);
@@ -1468,9 +1472,8 @@
          * @returns {editormd}             返回editormd的实例对象
          */
         
-        previewCodeHighlight : function() {    
+        previewCodeHighlight : function(previewContainer) {    
             var settings         = this.settings;
-            var previewContainer = this.previewContainer;
             
             if (settings.previewCodeHighlight) 
             {
@@ -1492,14 +1495,14 @@
          * @returns {editormd}             返回editormd的实例对象
          */
         
-        katexRender : function() {
+        katexRender : function(obj) {
             
             if (timer === null)
             {
                 return this;
             }
             
-            this.previewContainer.find("." + editormd.classNames.tex).each(function(){
+            obj.find("." + editormd.classNames.tex).each(function(){
                 var tex  = $(this);
                 editormd.$katex.render(tex.text(), tex[0]);
                 
@@ -1513,14 +1516,14 @@
 		 * 解析Tex(MathJax)数学公式
 		 * TeX(MathJax) renderer
 		 */
-		mathjaxRender : function(cb) {
+		mathjaxRender : function(obj,cb) {
 
 			if (timer === null)
             {
                 return this;
             }
 
-			this.previewContainer.find("." + editormd.classNames.tex).each(function(){
+			obj.find("." + editormd.classNames.tex).each(function(){
                 var tex  = $(this);
 				if(tex[0].hasAttribute("asciimath")){
 					if(tex[0].hasAttribute("inline")){
@@ -1817,6 +1820,7 @@
                 if (settings.watch)
                 {
                     _this.previewContainer.css("padding", settings.autoHeight ? "20px 20px 50px 40px" : "20px");
+					_this.previewContainer2.css("padding", settings.autoHeight ? "20px 20px 50px 40px" : "20px");
                 }
                 
                 timer = setTimeout(function() {
@@ -1966,6 +1970,7 @@
                 preview.width((!state.preview) ? editor.width() / 2 : editor.width());
                 
                 this.previewContainer.css("padding", settings.autoHeight ? "20px 20px 50px 40px" : "20px");
+				this.previewContainer2.css("padding", settings.autoHeight ? "20px 20px 50px 40px" : "20px");
                 
                 if (settings.toolbar && !settings.readOnly) 
                 {
@@ -2001,6 +2006,35 @@
             return this;
         },
         
+		//使用双缓冲区，避免屏幕排布时的抖动问题
+		swapPreviewContainer : function() {
+			if(this.previewCurrent==0){
+				this.previewContainer.hide();
+				this.previewContainer2.show();				
+				this.previewCurrent = 1;
+				return this.previewContainer2;
+			}else{
+				this.previewContainer.show();
+				this.previewContainer2.hide();
+				this.previewCurrent = 0;
+				return this.previewContainer;
+			}
+		},
+		getHidePreviewContainer : function(){
+			if(this.previewCurrent==0){
+				return this.previewContainer2;
+			}else{
+				return this.previewContainer;
+			}			
+		},
+		getShowPreviewContainer : function(){
+			if(this.previewCurrent==0){
+				return this.previewContainer;
+			}else{
+				return this.previewContainer2;
+			}			
+		},
+		
         /**
          * 解析和保存Markdown代码
          * Parse & Saving Markdown source code
@@ -2021,8 +2055,8 @@
             
             var cm               = this.cm;            
             var cmValue          = cm.getValue();
-            var previewContainer = this.previewContainer;
-
+            var previewContainer = this.getHidePreviewContainer();
+				
             if (settings.mode !== "gfm" && settings.mode !== "markdown") 
             {
                 this.markdownTextarea.val(cmValue);
@@ -2080,8 +2114,8 @@
             if(settings.watch || (!settings.watch && state.preview))
             {
                 previewContainer.html(newMarkdownDoc);
-
-                this.previewCodeHighlight();
+				
+                this.previewCodeHighlight(previewContainer);
                 
                 if (settings.toc) 
                 {
@@ -2115,13 +2149,13 @@
                         editormd.loadKaTeX(function() {
                             editormd.$katex = katex;
                             editormd.kaTeXLoaded = true;
-                            _this.katexRender();
+                            _this.katexRender(previewContainer);
                         });
                     } 
                     else 
                     {
                         editormd.$katex = katex;
-                        this.katexRender();
+                        this.katexRender(previewContainer);
                     }
                 }                
                 
@@ -2132,13 +2166,13 @@
                         editormd.loadMathJax(function() {
                             editormd.$mathjax = MathJax;
                             editormd.mathjaxLoaded = true;
-                            _this.mathjaxRender();
+                            _this.mathjaxRender(previewContainer);
                         });
                     } 
                     else 
                     {
                         editormd.$mathjax = MathJax;
-                        this.mathjaxRender();
+                        this.mathjaxRender(previewContainer);
                     }					
 				}
 				
@@ -2155,8 +2189,22 @@
                 {
                     $.proxy(settings.onchange, this)();
                 }
-				//自动对齐
+
 				//this.onpreviewchange();
+				{
+					if(this.swapID!==undefined){
+						clearInterval(this.swapID);
+						this.swapID = undefined;
+					}
+
+					var cb = function(){
+						_this.swapPreviewContainer();
+						_this.onpreviewchange();
+						clearInterval(_this.swapID);
+						_this.swapID = undefined;
+					};
+					this.swapID = setInterval(cb,300);
+				}
             }
 
             return this;
@@ -2166,24 +2214,19 @@
 			/**
 			 * 这里对选择题的按钮做等宽操作
 			 */
-			var id;
-			var cb = function(){
-				var ops = $("[option-btn]");
-				var opc = $("[option-correct]");
-				var mw = 0;
-				for(let i=0;i<ops.length;i++){
-					mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
-				}	
-				for(let i=0;i<opc.length;i++){
-					mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
-				}
-				if(mw>16){
-					ops.width(mw);				
-					opc.width(mw);		
-				}
-				clearInterval(id);
+			var ops = $("[option-btn]");
+			var opc = $("[option-correct]");
+			var mw = 0;
+			for(let i=0;i<ops.length;i++){
+				mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
+			}	
+			for(let i=0;i<opc.length;i++){
+				mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
 			}
-			id = setInterval(cb,500);
+			if(mw>16+40){
+				ops.width(mw-40);				
+				opc.width(mw-40);		
+			}
 		},
 		
         /**
@@ -2431,7 +2474,7 @@
                 return false;
             }
             
-            return this.previewContainer.html();
+            return this.getShowPreviewContainer().html();
         },
         
         /**

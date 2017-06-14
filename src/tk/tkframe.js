@@ -208,7 +208,7 @@ class TkFrame extends Component{
                     this.recalcIFrameSize();
                 }).bind(this);
                 cb();
-                id = setInterval(cb,100);
+                id = setInterval(cb,310);
             }else{
                 this.setState({iframeHeight:0,
                     topicsType:this.props.topicsType});

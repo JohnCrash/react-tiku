@@ -89,7 +89,13 @@ class TkMarkd extends Component{
     getHeight(){
         if(this.markd){
             var tb = this.markd.toolbar[0];
-            var prc = this.markd.previewContainer[0];
+            var prc;
+            //前后缓存区
+            if(this.markd.previewCurrent==0){
+                prc = this.markd.previewContainer[0];
+            }else{
+                prc = this.markd.previewContainer2[0];
+            }
             return tb.scrollHeight + prc.scrollHeight;
         }
     }
