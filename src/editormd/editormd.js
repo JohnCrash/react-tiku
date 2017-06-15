@@ -3881,109 +3881,110 @@
 			 
 			/**
 			 * 连线题
-			 * 以两位数开头加横线和空格，如1- 这样形成一个连线题的选项。(必须在开头)
-			 * 最后一行使用连接关系如1-3,2-4，这样表示正确的连接方式，同时表明了排版方式。横杆-前面的数为一组，后面的为一组
-			 * 如果前面加|线表示左右排版，如果没有表示上下排版。另外连接对以,或者空格分隔。
 			 */
 			 {
-				 if(/1- /.test(text) && /<br>2- /.test(text)){
+				 if(/1-\d{0,2} /.test(text) && /<br>2-\d{0,2} /g.test(text)){
 					/**
-					 * 搜索匹配1- (.*),...将它们转换为对象返回,如：[{txt:""},{txt:"",idx:1},{txt:"",idx:2}]
+					 * 将形如"1-2 contente"的开头转换为数组中的一个表{txt:"contente",idx1:1,idx2:2}
+					 * prefix是连线题前缀，vertical是横向还是纵向。
 					 */
 					var SearchOption = function(txt){
+						var prefix="",vertical=false;
 						var result = [];
 						var ntxt;
 						
-						ntxt = txt.replace(/(.*)<br>1- (.*?)<br>2- (.*)/,function($1,$2,$3,$4){
-							result.push({txt:$2+"<br>"});
-							result.push({txt:$3,idx:1});
-							return "2- "+$4;
+						ntxt = txt.replace(/(.*)<br>(\|?)1-(\d{0,2}) (.*?)<br>2-(.*)/,function($1,$2,$3,$4,$5,$6){
+							prefix = $2+"<br>";
+							vertical = $3==="|";
+							result.push({txt:$5,idx:$4});
+							return "2-"+$6;
 						});
 						if(ntxt===txt){
-							ntxt = txt.replace(/1- (.*?)<br>2- (.*)/,function($1,$2,$3){
-								result.push({txt:$2,idx:1});
-								return "2- "+$3;
-							});							
+							ntxt = txt.replace(/(\|?)1-(\d{0,2}) (.*?)<br>2-(.*)/,function($1,$2,$3,$4,$5){
+								vertical = $2==="|";
+								result.push({txt:$4,idx:$3});
+								return "2-"+$5;
+							});
 						}
 						if(ntxt===txt)
-							return result;
+							return [prefix,vertical,result];
 						txt = ntxt;
-						for(let i=2;i<20;i++){
-							var reg = new RegExp(`${i}- (.*?)<br>${i+1}- (.*)`);
-							ntxt = txt.replace(reg,function($1,$2,$3){
-								result.push({txt:$2,idx:i});
-								return `${i+1}- `+$3;
+						for(let i=2;i<21;i++){
+							var reg = new RegExp(`${i}-(\\d{0,2}) (.*?)<br>${i+1}-(.*)`);
+							ntxt = txt.replace(reg,function($1,$2,$3,$4){
+								result.push({txt:$3,idx:$2});
+								return `${i+1}-`+$4;
 							});
 							if(ntxt===txt){
-								var reg = new RegExp(`${i}- (.*)`);
-								txt.replace(reg,function($1,$2,$3){
-									result.push({txt:$2,idx:i});
+								var reg = new RegExp(`${i}-(\\d{0,2}) (.*)`);
+								txt.replace(reg,function($1,$2,$3,$4){
+									result.push({txt:$3,idx:$2});
 									return "";
 								});
 								break;
 							}
 							txt = ntxt;
 						}
-						return result;
-					};					 
-					 //如果存在连接描述行
-					 if(/<br>\d{1,2}-\d{1,2}/g.test(text)){//使用表格来表现连线
-						var lnk;
-						var txt = text.replace(/(.*)<br>(\d{1,2}-\d{1,2})(.*)/,function($1,$2,$3,$4){
-							 lnk = $3+$4;
-							 return $2;
-						 });
-						 if(txt!==text){
-							var lnks = lnk.split(/[, ]/);
-							var links = [];
-							for(let i=0;i<lnks.length;i++){
-								let m = lnks[i].match(/(\d{1,2})-(\d{1,2})/);
-								if(m){
-									links.push({a:m[1],b:m[2]});
+						return [prefix,vertical,result];
+					};
+					let [prefix,vertical,lnks] = SearchOption(text);
+					if(lnks.length>0){
+						let lnkPairs = {};//查找连接对
+						for(let i=0;i<lnks.length;i++){
+							if(lnks[i].idx!==""){
+								let n = Number(lnks[i].idx);
+								if(n<lnks.length+1 && n>0){
+									let a = Math.min(i+1,n);
+									let b = Math.max(i+1,n);
+									lnkPairs[`l_${a}_${b}`] = {a:a,b:b};
 								}
 							}
-							var ops = SearchOption(txt);
-							var getOptionsByIdx = function(idx){
-								for(let i = 0;i<ops.length;i++){
-									if( ops[i].idx == idx )
-										return ops[i].txt;
-								}
-							}
-							if(ops.length>0){
-								if(ops[0].idx)
-									text = "";
-								else
-									text = ops[0].txt;
-								 for(let i=0;i<links.length;i++){
-									 let idx = links[i].a;
-									 let txt = getOptionsByIdx(idx);
-									 if(txt){
-										text += `<span option-link1="${idx}" onclick="option_onclick(this);">${txt}</span>`;
-									 }
-								 }
-								 text += "<br>";
-								 for(let i=0;i<links.length;i++){
-									 let idx = links[i].b;
-									 let txt = getOptionsByIdx(idx);
-									 if(txt){
-										text += `<span option-link2="${idx}" onclick="option_onclick(this);">${txt}</span>`;
-									 }
-								 }								 
-							}							 
-						 }
-					 }else{//简单的竖排按钮类似于选择题
-						var ops = SearchOption(text);
-						if(ops.length>0){
-							text = "";
-							 for(let i=0;i<ops.length;i++){
-								 if(ops[i].idx){
-									 text += `<span option-link="${ops[i].idx}" onclick="option_onclick(this);">${ops[i].txt}</span><br>`;
-								 }else{
-									 text += ops[i].txt;
-								 }
-							 }
 						}
-					 }
+						let A = [],B=[];
+						for(let key in lnkPairs){ //连接对分别放入A组和B组
+							lnks[lnkPairs[key].a-1].i = lnkPairs[key].a;
+							lnks[lnkPairs[key].b-1].i = lnkPairs[key].b;
+							A.push(lnks[lnkPairs[key].a-1]);
+							B.push(lnks[lnkPairs[key].b-1]);
+						}
+						//将没有连接的项加入到A或者B中
+						for(let i=0;i<lnks.length;i++){
+							if(!lnks[i].i){
+								if(i<lnks.length/2){
+									lnks[i].i = i+1;
+									A.push(lnks[i]);
+								}else{
+									lnks[i].i = i+1;
+									B.push(lnks[i]);
+								}
+							}
+						}
+						//对A,B进行排序
+						let sortFunc = function(a,b){return a.i > b.i;};
+						A.sort(sortFunc);
+						B.sort(sortFunc);
+						//准备输出连线题节点
+						let createTable=function(t,vert){ //用于产生表格
+							let txt = "<table>";
+							if(vert){
+								txt += "<tr>";
+								for(let i=0;i<t.length;i++){
+									txt += `<td>${t[i]}</td>`;
+								}
+								txt += "</tr>";
+							}else{
+								for(let i=0;i<t.length;i++){
+									txt += `<tr><td>${t[i]}</td></tr>`;
+								}
+							}
+							return txt+"</table>";
+						};
+						text = prefix+createTable([createTable(A.map((v)=>{
+							return `<span option-link1="${v.i}">${v.txt}</span>`;
+						}),!vertical),"x",createTable(B.map((v)=>{
+							return `<span option-link2="${v.i}">${v.txt}</span>`;
+						}),!vertical)],vertical);
+					}
 				 }
 			 }
 			 /**
