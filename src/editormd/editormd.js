@@ -3883,7 +3883,7 @@
 			 * 连线题
 			 */
 			 {
-				 if(/\|?1-\d{0,2} /.test(text) && /<br>2-\d{0,2} /g.test(text)){
+				 if(/\|?1-\d{0,2} ?/.test(text) && /<br>2-\d{0,2} ?/g.test(text)){
 					/**
 					 * 将形如"1-2 contente"的开头转换为数组中的一个表{txt:"contente",idx1:1,idx2:2}
 					 * prefix是连线题前缀，vertical是横向还是纵向。
@@ -3893,14 +3893,14 @@
 						var result = [];
 						var ntxt;
 						
-						ntxt = txt.replace(/(.*)<br>(\|?)1-(\d{0,2}) (.*?)<br>2-(.*)/,function($1,$2,$3,$4,$5,$6){
+						ntxt = txt.replace(/(.*)<br>(\|?)1-(\d{0,2}) ?(.*?)<br>2-(.*)/,function($1,$2,$3,$4,$5,$6){
 							prefix = $2+"<br>";
 							vertical = $3==="|";
 							result.push({txt:$5,idx:$4});
 							return "2-"+$6;
 						});
 						if(ntxt===txt){
-							ntxt = txt.replace(/(\|?)1-(\d{0,2}) (.*?)<br>2-(.*)/,function($1,$2,$3,$4,$5){
+							ntxt = txt.replace(/(\|?)1-(\d{0,2}) ?(.*?)<br>2-(.*)/,function($1,$2,$3,$4,$5){
 								vertical = $2==="|";
 								result.push({txt:$4,idx:$3});
 								return "2-"+$5;
@@ -3910,13 +3910,13 @@
 							return [prefix,vertical,result];
 						txt = ntxt;
 						for(let i=2;i<21;i++){
-							var reg = new RegExp(`${i}-(\\d{0,2}) (.*?)<br>${i+1}-(.*)`);
+							var reg = new RegExp(`${i}-(\\d{0,2}) ?(.*?)<br>${i+1}-(.*)`);
 							ntxt = txt.replace(reg,function($1,$2,$3,$4){
 								result.push({txt:$3,idx:$2});
 								return `${i+1}-`+$4;
 							});
 							if(ntxt===txt){
-								var reg = new RegExp(`${i}-(\\d{0,2}) (.*)`);
+								var reg = new RegExp(`${i}-(\\d{0,2}) ?(.*)`);
 								txt.replace(reg,function($1,$2,$3,$4){
 									result.push({txt:$3,idx:$2});
 									return "";
@@ -3965,44 +3965,39 @@
 						let sortFunc = function(a,b){return a.i > b.i;};
 						A.sort(sortFunc);
 						B.sort(sortFunc);
+						let create3Table=function(A,C,B){ //仅仅将A组连线部分和B组组合为一个表格
+							return `<table class="link" border="0">`+(!vertical?
+								`<tr><td align="center" style="padding: 0px 0px;">${A}</td></tr>
+								<tr><td align="center" style="padding: 0px 0px;">${C}</td></tr>
+								<tr><td align="center" style="padding: 0px 0px;">${B}</td></tr>`:
+								`<tr><td style="padding: 0px 0px;">${A}</td>
+								<td style="padding: 0px 0px;">${C}</td>
+								<td style="padding: 0px 0px;">${B}</td></tr>`)+`</table>`;
+						};
 						//准备输出连线题节点
-						let createTable=function(t,vert,ctr){ //用于产生表格
+						let createTable=function(t,ctr){ //用于产生连线项表格
 							let txt = "<table class=\"link\" border=\"0\">";
-							let trcstr = "";
-							let tdalgin = "";
-							if(ctr==="A"){
-								trcstr = " class=\"A\"";
-							}else if(ctr==="B"){
-								trcstr = " class=\"B\"";
-							}
-							if(vert){
-								if(ctr==="A")
-									tdalgin=" align=\"right\"";
-								else if(ctr==="B")
-									tdalgin=" align=\"left\"";
-								else
-									tdalgin=" align=\"center\"";
-							}else{
-								tdalgin=" align=\"center\"";
-							}
-							if(!vert){
+							let [trcstr,tdalgin] = ctr==="A"?[" class=\"A\""," align=\"right\""]:[" class=\"B\""," align=\"left\""];
+							if(!vertical){
 								txt += `<tr${trcstr}>`;
 								for(let i=0;i<t.length;i++){
-									txt += `<td${tdalgin}>${t[i]}</td>`;
+									txt += `<td${tdalgin} style="padding:0px 7px;">${t[i]}</td>`;
 								}
 								txt += "</tr>";
 							}else{
 								for(let i=0;i<t.length;i++){
-									txt += `<tr${trcstr}><td${tdalgin}>${t[i]}</td></tr>`;
+									txt += `<tr${trcstr}><td${tdalgin} style="padding:7px 0px;">${t[i]}</td></tr>`;
 								}
 							}
 							return txt+"</table>";
 						};
-						text = prefix+createTable([createTable(A.map((v)=>{
-							return `<span option-link1="${v.i}">${v.txt}</span>`;
-						}),vertical,"A"),"x",createTable(B.map((v)=>{
-							return `<span option-link2="${v.i}">${v.txt}</span>`;
-						}),vertical,"B")],!vertical,"X");
+						text = prefix+create3Table(createTable(A.map((v)=>{
+								return `<span lnkGroupA lnkID="${v.i}" lnkTo="${v.idx}" style="margin-top:0px">${v.txt}</span>`;
+							}),"A"),
+							`<svg></svg>`,
+							createTable(B.map((v)=>{
+								return `<span lnkGroupB lnkID="${v.i}" lnkTo="${v.idx}" style="margin-top:0px">${v.txt}</span>`;
+							}),"B"));						
 					}
 				 }
 			 }
