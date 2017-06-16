@@ -3883,7 +3883,7 @@
 			 * 连线题
 			 */
 			 {
-				 if(/1-\d{0,2} /.test(text) && /<br>2-\d{0,2} /g.test(text)){
+				 if(/\|?1-\d{0,2} /.test(text) && /<br>2-\d{0,2} /g.test(text)){
 					/**
 					 * 将形如"1-2 contente"的开头转换为数组中的一个表{txt:"contente",idx1:1,idx2:2}
 					 * prefix是连线题前缀，vertical是横向还是纵向。
@@ -3942,10 +3942,12 @@
 						}
 						let A = [],B=[];
 						for(let key in lnkPairs){ //连接对分别放入A组和B组
-							lnks[lnkPairs[key].a-1].i = lnkPairs[key].a;
-							lnks[lnkPairs[key].b-1].i = lnkPairs[key].b;
-							A.push(lnks[lnkPairs[key].a-1]);
-							B.push(lnks[lnkPairs[key].b-1]);
+							if(!lnks[lnkPairs[key].a-1].i && !lnks[lnkPairs[key].b-1].i){
+								lnks[lnkPairs[key].a-1].i = lnkPairs[key].a;
+								lnks[lnkPairs[key].b-1].i = lnkPairs[key].b;
+								A.push(lnks[lnkPairs[key].a-1]);
+								B.push(lnks[lnkPairs[key].b-1]);
+							}
 						}
 						//将没有连接的项加入到A或者B中
 						for(let i=0;i<lnks.length;i++){
@@ -3964,26 +3966,43 @@
 						A.sort(sortFunc);
 						B.sort(sortFunc);
 						//准备输出连线题节点
-						let createTable=function(t,vert){ //用于产生表格
-							let txt = "<table>";
+						let createTable=function(t,vert,ctr){ //用于产生表格
+							let txt = "<table class=\"link\" border=\"0\">";
+							let trcstr = "";
+							let tdalgin = "";
+							if(ctr==="A"){
+								trcstr = " class=\"A\"";
+							}else if(ctr==="B"){
+								trcstr = " class=\"B\"";
+							}
 							if(vert){
-								txt += "<tr>";
+								if(ctr==="A")
+									tdalgin=" align=\"right\"";
+								else if(ctr==="B")
+									tdalgin=" align=\"left\"";
+								else
+									tdalgin=" align=\"center\"";
+							}else{
+								tdalgin=" align=\"center\"";
+							}
+							if(!vert){
+								txt += `<tr${trcstr}>`;
 								for(let i=0;i<t.length;i++){
-									txt += `<td>${t[i]}</td>`;
+									txt += `<td${tdalgin}>${t[i]}</td>`;
 								}
 								txt += "</tr>";
 							}else{
 								for(let i=0;i<t.length;i++){
-									txt += `<tr><td>${t[i]}</td></tr>`;
+									txt += `<tr${trcstr}><td${tdalgin}>${t[i]}</td></tr>`;
 								}
 							}
 							return txt+"</table>";
 						};
 						text = prefix+createTable([createTable(A.map((v)=>{
 							return `<span option-link1="${v.i}">${v.txt}</span>`;
-						}),!vertical),"x",createTable(B.map((v)=>{
+						}),vertical,"A"),"x",createTable(B.map((v)=>{
 							return `<span option-link2="${v.i}">${v.txt}</span>`;
-						}),!vertical)],vertical);
+						}),vertical,"B")],!vertical,"X");
 					}
 				 }
 			 }
