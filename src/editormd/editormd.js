@@ -2203,7 +2203,7 @@
 						clearInterval(_this.swapID);
 						_this.swapID = undefined;
 					};
-					_this.swapID = setInterval(cb,200);
+					_this.swapID = setInterval(cb,500);
 				}
             }
 
@@ -3925,7 +3925,9 @@
 						for(let key in lnkPairs){ //连接对分别放入A组和B组
 							if(!lnks[lnkPairs[key].a-1].i && !lnks[lnkPairs[key].b-1].i){
 								lnks[lnkPairs[key].a-1].i = lnkPairs[key].a;
+								lnks[lnkPairs[key].a-1].idx = lnkPairs[key].b;
 								lnks[lnkPairs[key].b-1].i = lnkPairs[key].b;
+								lnks[lnkPairs[key].b-1].idx = lnkPairs[key].a;
 								A.push(lnks[lnkPairs[key].a-1]);
 								B.push(lnks[lnkPairs[key].b-1]);
 							}
@@ -4696,7 +4698,8 @@
 		 * 连线题做最后连线的绘制
 		 */
 		var a = [$("."+editormd.classPrefix+"preview-container:first"),
-		$("."+editormd.classPrefix+"preview-container:last")];
+		$("."+editormd.classPrefix+"preview-container:last"),
+		$("#test-editormd-view2")];
 		for(let i=0;i<a.length;i++){
 			var agroup = a[i].find("[lnkgroupa]");
 			var bgroup = a[i].find("[lnkgroupb]");
@@ -4729,6 +4732,7 @@
 								x2 = svg[0].clientWidth;
 								offoy = parentTable(_to[0]).offsetTop;
 								y2 = offoy + _to[0].offsetParent.offsetTop+_to[0].offsetParent.offsetHeight/2;
+								x1+=3;x2-=3;
 							}else{
 								let offox = parentTable(_this[0]).offsetLeft;
 								x1 = offox + _this[0].offsetParent.offsetLeft+_this[0].offsetParent.offsetWidth/2;
@@ -4736,15 +4740,20 @@
 								offox = parentTable(_to[0]).offsetLeft;								
 								x2 = offox + _to[0].offsetParent.offsetLeft+_to[0].offsetParent.offsetWidth/2;
 								y2 = svg[0].clientHeight;
+								y1+=3;y2-=3;
 							}
-							svghtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>`;
+							/*//连线两头加点
+							svghtml += `<circle cx="${x1}" cy="${y1}" r="1.5" stroke="black" stroke-width="2" fill="black"/>
+							<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>
+							<circle cx="${x2}" cy="${y2}" r="1.5" stroke="black" stroke-width="2" fill="black"/>`;*/
+							svghtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>`;							
 						}
 					}
 					return true;
 				});
 				if(svghtml){
 					if(svg.attr("vertical")==="true"){
-						let h = svg[0].parentNode.clientHeight;
+						let h = svg[0].parentNode.clientHeight; //这样做是因为svg height:100%不工作
 						svg.height(h).html(svghtml);
 					}else
 						svg.html(svghtml);	
