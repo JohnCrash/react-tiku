@@ -2166,13 +2166,13 @@
                         editormd.loadMathJax(function() {
                             editormd.$mathjax = MathJax;
                             editormd.mathjaxLoaded = true;
-                            _this.mathjaxRender(previewContainer);
+                            _this.mathjaxRender(previewContainer,editormd.onchange);
                         });
                     } 
                     else 
                     {
                         editormd.$mathjax = MathJax;
-                        this.mathjaxRender(previewContainer);
+                        this.mathjaxRender(previewContainer,editormd.onchange);
                     }					
 				}
 				
@@ -2192,42 +2192,23 @@
 
 				//this.onpreviewchange();
 				{
-					if(this.swapID!==undefined){
-						clearInterval(this.swapID);
-						this.swapID = undefined;
+					if(_this.swapID!==undefined){
+						clearInterval(_this.swapID);
+						_this.swapID = undefined;
 					}
 
 					var cb = function(){
 						_this.swapPreviewContainer();
-						_this.onpreviewchange();
+						editormd.onchange();
 						clearInterval(_this.swapID);
 						_this.swapID = undefined;
 					};
-					this.swapID = setInterval(cb,500);
+					_this.swapID = setInterval(cb,200);
 				}
             }
 
             return this;
         },
-        
-		onpreviewchange:function(){
-			/**
-			 * 这里对选择题的按钮做等宽操作
-			 */
-			var ops = $("[option-btn]");
-			var opc = $("[option-correct]");
-			var mw = 0;
-			for(let i=0;i<ops.length;i++){
-				mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
-			}	
-			for(let i=0;i<opc.length;i++){
-				mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
-			}
-			if(mw>16+40){
-				ops.width(mw-40);				
-				opc.width(mw-40);		
-			}
-		},
 		
         /**
          * 聚焦光标位置
@@ -3991,10 +3972,11 @@
 							}
 							return txt+"</table>";
 						};
+						let svgstyle = !vertical?"width:100%;height:120px":"width:120px;height:100%";
 						text = prefix+create3Table(createTable(A.map((v)=>{
 								return `<span lnkGroupA lnkID="${v.i}" lnkTo="${v.idx}" style="margin-top:0px">${v.txt}</span>`;
 							}),"A"),
-							`<svg></svg>`,
+							`<svg id="svglnks" vertical="${vertical}" style="${svgstyle}"></svg>`,
 							createTable(B.map((v)=>{
 								return `<span lnkGroupB lnkID="${v.i}" lnkTo="${v.idx}" style="margin-top:0px">${v.txt}</span>`;
 							}),"B"));						
@@ -4508,24 +4490,7 @@
             return saveTo.val();
         };
 		
-		//预览markd，最后都文档做一些处理
-		var previewDone = function(){
-			var ops = $("[option-btn]");
-			var opc = $("[option-correct]");
-			var mw = 0;
-			for(let i=0;i<ops.length;i++){
-				mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
-			}	
-			for(let i=0;i<opc.length;i++){
-				mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
-			}
-			if(mw>16+40){
-				ops.width(mw-40);				
-				opc.width(mw-40);		
-			}
-		};
-		
-		previewDone();
+		editormd.onchange();
         return div;
     };
     
@@ -4706,7 +4671,89 @@
 		}
         editormd.loadScript(editormd.mathjaxURL, hook || function(){});
     };
-    	 
+    
+	/**
+	 * 当文档在被渲染好后，做最后处理
+	 */
+	editormd.onchange = function(){
+		/**
+		 * 这里对选择题的按钮做等宽操作
+		 */
+		var ops = $("[option-btn]");
+		var opc = $("[option-correct]");
+		var mw = 0;
+		for(let i=0;i<ops.length;i++){
+			mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
+		}	
+		for(let i=0;i<opc.length;i++){
+			mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
+		}
+		if(mw>16+40){
+			ops.width(mw-40);				
+			opc.width(mw-40);		
+		}	
+		/**
+		 * 连线题做最后连线的绘制
+		 */
+		var a = [$("."+editormd.classPrefix+"preview-container:first"),
+		$("."+editormd.classPrefix+"preview-container:last")];
+		for(let i=0;i<a.length;i++){
+			var agroup = a[i].find("[lnkgroupa]");
+			var bgroup = a[i].find("[lnkgroupb]");
+			var svg = a[i].find("#svglnks");
+			if(agroup.length>0 && bgroup.length>0 && svg.length==1){
+				var svghtml = "";
+				agroup.each(function(){ //这里为什么不能用agroup.each(()=>{});
+					let _this = $(this);
+					let id = _this.attr("lnkid");
+					let to = _this.attr("lnkto");
+					if(to){
+						let _to; //这里为什么不能用let _to = bgroup.find(`[linkid='${to}']`);
+						bgroup.each(function(){
+							if( $(this).attr("lnkid") === to ){
+								_to = $(this);
+								return false;
+							}
+							return true;
+						});
+						if(_to && _to.length==1 && svg[0].clientHeight && _this[0].offsetParent && _to[0].offsetParent){
+							let x1,y1,x2,y2;
+							let parentTable = function(c){
+								//s->td->tr->tbody->table
+								return c.parentNode.parentNode.parentNode.parentNode;
+							};							
+							if(svg.attr("vertical")==="true"){
+								x1 = 0;
+								let offoy = parentTable(_this[0]).offsetTop;
+								y1 = offoy+_this[0].offsetParent.offsetTop+_this[0].offsetParent.offsetHeight/2;
+								x2 = svg[0].clientWidth;
+								offoy = parentTable(_to[0]).offsetTop;
+								y2 = offoy + _to[0].offsetParent.offsetTop+_to[0].offsetParent.offsetHeight/2;
+							}else{
+								let offox = parentTable(_this[0]).offsetLeft;
+								x1 = offox + _this[0].offsetParent.offsetLeft+_this[0].offsetParent.offsetWidth/2;
+								y1 = 0;
+								offox = parentTable(_to[0]).offsetLeft;								
+								x2 = offox + _to[0].offsetParent.offsetLeft+_to[0].offsetParent.offsetWidth/2;
+								y2 = svg[0].clientHeight;
+							}
+							svghtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>`;
+						}
+					}
+					return true;
+				});
+				if(svghtml){
+					if(svg.attr("vertical")==="true"){
+						let h = svg[0].parentNode.clientHeight;
+						svg.height(h).html(svghtml);
+					}else
+						svg.html(svghtml);	
+				}
+			}
+		}
+		
+	};
+	
     /**
      * 锁屏
      * lock screen
