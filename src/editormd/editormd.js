@@ -1539,20 +1539,10 @@
 						tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
 					}
 				}
-                editormd.$mathjax.Hub.Typeset(tex[0],cb);
-				/*
-				function showNode(node){
-					node.style.visibility = "";
-				}
-				function hideNode(node){
-					node.style.visibility = "hidden";
-				}				
-				editormd.$mathjax.Hub.queue.Push(
-				[hideNode,tex[0]],
-				["Typeset",editormd.$mathjax.Hub,tex[0]],
-				[showNode,tex[0]],
-				);*/
+                //editormd.$mathjax.Hub.Typeset(tex[0],cb);
+				editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
             }); 
+			editormd.$mathjax.Hub.queue.Push([cb]);
 			return this;
 		},
 		
@@ -2158,21 +2148,25 @@
                         this.katexRender(previewContainer);
                     }
                 }                
-                
+
 				if(settings.mathjax)
 				{
+					let cb = function(){
+						_this.swapPreviewContainer();
+						editormd.onchange();
+					};					
                     if (!editormd.mathjaxLoaded && settings.autoLoadModules) 
                     {
                         editormd.loadMathJax(function() {
                             editormd.$mathjax = MathJax;
                             editormd.mathjaxLoaded = true;
-                            _this.mathjaxRender(previewContainer,editormd.onchange);
+                            _this.mathjaxRender(previewContainer,cb);
                         });
                     } 
                     else 
                     {
                         editormd.$mathjax = MathJax;
-                        this.mathjaxRender(previewContainer,editormd.onchange);
+                        this.mathjaxRender(previewContainer,cb);
                     }					
 				}
 				
@@ -2191,6 +2185,7 @@
                 }
 
 				//this.onpreviewchange();
+				/* //使用延时的方法来做交互前后缓冲区
 				{
 					if(_this.swapID!==undefined){
 						clearInterval(_this.swapID);
@@ -2205,6 +2200,7 @@
 					};
 					_this.swapID = setInterval(cb,500);
 				}
+				*/
             }
 
             return this;
