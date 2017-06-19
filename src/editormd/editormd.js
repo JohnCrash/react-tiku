@@ -4683,17 +4683,21 @@
 		 */
 		var ops = $("[option-btn]");
 		var opc = $("[option-correct]");
-		var mw = 0;
-		for(let i=0;i<ops.length;i++){
-			mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
-		}	
-		for(let i=0;i<opc.length;i++){
-			mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
+		if(ops.length>0 || opc.length>0){
+			var mw = 0;
+			ops.css("width","initial");
+			for(let i=0;i<ops.length;i++){
+				mw = ops[i].clientWidth>mw?ops[i].clientWidth:mw;
+			}	
+			opc.css("width","initial");
+			for(let i=0;i<opc.length;i++){
+				mw = opc[i].clientWidth>mw?opc[i].clientWidth:mw;
+			}
+			if(mw>16+40){
+				ops.width(mw-40);				
+				opc.width(mw-40);		
+			}
 		}
-		if(mw>16+40){
-			ops.width(mw-40);				
-			opc.width(mw-40);		
-		}	
 		/**
 		 * 连线题做最后连线的绘制
 		 */
