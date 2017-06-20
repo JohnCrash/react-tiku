@@ -450,6 +450,7 @@
 			this.previewContainer2 = this.preview.children("." + classPrefix + "preview-container:last");
 			this.previewContainer2.hide();
 			this.previewCurrent = 0;
+			editormd.swapCount = 0;
 			
             if (settings.previewTheme !== "") 
             {
@@ -1517,14 +1518,13 @@
 		 * TeX(MathJax) renderer
 		 */
 		mathjaxRender : function(obj,cb) {
-
+			/*
 			if (timer === null)
             {
                 return this;
-            }
-
+            }*/
 			obj.find("." + editormd.classNames.tex).each(function(){
-                var tex  = $(this);
+				var tex  = $(this);
 				if(tex[0].hasAttribute("asciimath")){
 					if(tex[0].hasAttribute("inline")){
 						tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
@@ -1539,9 +1539,9 @@
 						tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
 					}
 				}
-                //editormd.$mathjax.Hub.Typeset(tex[0],cb);
+				//editormd.$mathjax.Hub.Typeset(tex[0],cb);
 				editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
-            }); 
+			}); 
 			editormd.$mathjax.Hub.queue.Push([cb]);
 			return this;
 		},
@@ -2152,8 +2152,10 @@
 				if(settings.mathjax)
 				{
 					let cb = function(){
-						_this.swapPreviewContainer();
-						editormd.onchange();
+						if(--editormd.swapCount<=0){
+							_this.swapPreviewContainer();
+							editormd.onchange();
+						}
 					};					
                     if (!editormd.mathjaxLoaded && settings.autoLoadModules) 
                     {
@@ -2183,24 +2185,7 @@
                 {
                     $.proxy(settings.onchange, this)();
                 }
-
-				//this.onpreviewchange();
-				/* //使用延时的方法来做交互前后缓冲区
-				{
-					if(_this.swapID!==undefined){
-						clearInterval(_this.swapID);
-						_this.swapID = undefined;
-					}
-
-					var cb = function(){
-						_this.swapPreviewContainer();
-						editormd.onchange();
-						clearInterval(_this.swapID);
-						_this.swapID = undefined;
-					};
-					_this.swapID = setInterval(cb,500);
-				}
-				*/
+				editormd.swapCount++;
             }
 
             return this;
@@ -3726,54 +3711,51 @@
 			/**
 			 * 做选择题处理
 			 * 选择题判断条件，1必须至少有三个可选项ABC,2必须是以A. ,B. ,这样开头注意后面有一个空格,正确答案字母后面加),例如A). 
-			 * 如果首字母是X和V将被认为是对错题。
+			 * 如果A前面是-则表示横向排列
 			 */
 			 {
-				 if(/A\)?. /.test(text) && /<br>B\)?. /.test(text)){
+				 if(/A\)?\. (.*?)<br>B\)?\. /.test(text)){
+					 var ops = []; //每一个是选项对象{txt:'A的题面',correct:false}
 					 var build_option = function(op,t){
-						 var m = op.match(/([ABCDEF])(\)?)\. /);
-						 if(m){
-							 if(m[2]===')'){
-								 return `<span option-correct="${m[1]}" onclick="option_onclick(this);">${m[1]}. ${t}</span><br>`;
-							 }else{
-								 return `<span option-btn="${m[1]}" onclick="option_onclick(this);">${m[1]}. ${t}</span><br>`;
-							 }
+						 if(t.correct){
+							 return `<span option-correct="${op}" onclick="option_onclick(this);">${op}. ${t.txt}</span><br>`;
+						 }else{
+							 return `<span option-btn="${op}" onclick="option_onclick(this);">${op}. ${t.txt}</span><br>`;
 						 }
 						 return "<br>";
-					 };					 
-					 if(/<br>C\)?. /.test(text)){
-						 if(/<br>D\)?. /.test(text)){
-							 if(/<br>E\)?. /.test(text)){
-								 if(/<br>F\)?. /.test(text)){
-									 //ABCDEF,最大支持到F,也就是6个选择
-									 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)<br>(F\)?. )(.*)/,
-										function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13){
-										 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11)+build_option($12,$13);
-									 });									 
-								 }else{
-									 //ABCDE
-									 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)<br>(E\)?. )(.*)/,
-										function($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11){
-										 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9)+build_option($10,$11);
-									 });								 
-								 }
-							 }else{
-								 //ABCD
-								 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)<br>(D\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7,$8,$9){
-									 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7)+build_option($8,$9);
-								 });							 
-							 }
-						 }else{
-							 //ABC
-							 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)<br>(C\)?. )(.*)/,function($1,$2,$3,$4,$5,$6,$7){
-								 return build_option($2,$3)+build_option($4,$5)+build_option($6,$7);
+					 };
+					 let A = "A".charCodeAt(0);
+					 
+					 for(let i = 0;i<24;i++){
+						 let op1 = String.fromCharCode(A+i);
+						 let op2 = String.fromCharCode(A+i+1);
+						 let reg = new RegExp(`${op1}(\\)?)\\. (.*?)<br>(${op2})(\\)?)\\. (.*)`);
+						 let ntxt = text.replace(reg,function($1,$2,$3,$4,$5,$6){
+							 ops.push({txt:$3,correct:$2===")"});
+							 return $4+$5+". "+$6;
+						 });
+						 if(ntxt===text){
+							 reg = new RegExp(`${op1}(\\)?)\\. (.*)`);
+							 text = text.replace(reg,function($1,$2,$3){
+								 ops.push({txt:$3,correct:$2===")"});
+								 return "";
 							 });
+							 break;
 						 }
-					 }else{
-						 //AB
-						 text = text.replace(/(A\)?. )(.*)<br>(B\)?. )(.*)/,function($1,$2,$3,$4,$5){
-							 return build_option($2,$3)+build_option($4,$5);
-						 });						 
+						 text = ntxt;
+					 }
+					 //如果在A的开头有-表示横向排列，如果-2表示有两列
+					 let col = 0;
+					 text = text.replace(/<br>-(\d?)$/,function($1,$2){
+						col = $2===""?1:Number($2);
+						return "";
+					 });
+					 if(col===0){ //单一竖列
+						 for(let i = 0;i<ops.length;i++){
+							 text += build_option(String.fromCharCode(A+i),ops[i]);
+						 }
+					 }else{//多列col
+						 
 					 }
 				 }
 			 }
