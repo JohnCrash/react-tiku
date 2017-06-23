@@ -450,8 +450,7 @@
 			this.previewContainer2 = this.preview.children("." + classPrefix + "preview-container:last");
 			this.previewContainer2.hide();
 			this.previewCurrent = 0;
-			editormd.swapCount = 0;
-			
+
             if (settings.previewTheme !== "") 
             {
                 this.preview.addClass(classPrefix + "preview-theme-" + settings.previewTheme);
@@ -1517,32 +1516,50 @@
 		 * 解析Tex(MathJax)数学公式
 		 * TeX(MathJax) renderer
 		 */
-		mathjaxRender : function(obj,cb) {
-			/*
-			if (timer === null)
-            {
-                return this;
-            }*/
-			obj.find("." + editormd.classNames.tex).each(function(){
-				var tex  = $(this);
-				if(tex[0].hasAttribute("asciimath")){
-					if(tex[0].hasAttribute("inline")){
-						tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
-					}else{
-						tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
-						//tex[0].innerHTML = "<div style=\"text-align:center\">`"+tex[0].innerHTML+"`</div>";
+		mathjaxRender : function(obj) {
+			let _this = this;
+			if( _this.MJRid ){
+				clearInterval(_this.MJRid);
+				_this.MJRid = undefined;
+			}
+			let typeset = function(){
+				let cb = function(){
+					_this.MJRcbcount--;
+					if(_this.MJRcbcount==0){
+						console.log("swap"+_this.MJRcbcount);
+						_this.swapPreviewContainer();
+						editormd.onchange();
 					}
-				}else{
-					if(tex[0].hasAttribute("inline")){
-						tex[0].innerHTML = "\\("+tex[0].innerHTML+"\\)";
+				};
+				obj.find("." + editormd.classNames.tex).each(function(){
+					var tex  = $(this);
+					if(tex[0].hasAttribute("asciimath")){
+						if(tex[0].hasAttribute("inline")){
+							tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
+						}else{
+							tex[0].innerHTML = "`"+tex[0].innerHTML+"`";
+						}
 					}else{
-						tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
+						if(tex[0].hasAttribute("inline")){
+							tex[0].innerHTML = "\\("+tex[0].innerHTML+"\\)";
+						}else{
+							tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
+						}
 					}
+					//editormd.$mathjax.Hub.Typeset(tex[0]);
+					editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
+				}); 
+				
+				if(_this.MJRcbcount==undefined)
+					_this.MJRcbcount = 0;
+				_this.MJRcbcount++;		
+				if(_this.MJRid){
+					clearInterval(_this.MJRid);
+					_this.MJRid = undefined;
 				}
-				//editormd.$mathjax.Hub.Typeset(tex[0],cb);
-				editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
-			}); 
-			editormd.$mathjax.Hub.queue.Push([cb]);
+				editormd.$mathjax.Hub.queue.Push([cb]); //可能立刻调用cb
+			};
+			_this.MJRid = setInterval(typeset,300);
 			return this;
 		},
 		
@@ -2150,25 +2167,19 @@
                 }                
 
 				if(settings.mathjax)
-				{
-					let cb = function(){
-						if(--editormd.swapCount<=0){
-							_this.swapPreviewContainer();
-							editormd.onchange();
-						}
-					};					
+				{					
                     if (!editormd.mathjaxLoaded && settings.autoLoadModules) 
                     {
                         editormd.loadMathJax(function() {
                             editormd.$mathjax = MathJax;
                             editormd.mathjaxLoaded = true;
-                            _this.mathjaxRender(previewContainer,cb);
+							_this.mathjaxRender(previewContainer);
                         });
                     } 
                     else 
                     {
                         editormd.$mathjax = MathJax;
-                        this.mathjaxRender(previewContainer,cb);
+						this.mathjaxRender(previewContainer);
                     }					
 				}
 				
@@ -2185,7 +2196,6 @@
                 {
                     $.proxy(settings.onchange, this)();
                 }
-				editormd.swapCount++;
             }
 
             return this;
