@@ -6,6 +6,9 @@ import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui
 import TkMoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import TkArrowLeft from 'material-ui/svg-icons/navigation/chevron-left';
 import TkArrowRight from 'material-ui/svg-icons/navigation/chevron-right';
+import TkLinkPhone from 'material-ui/svg-icons/notification/tap-and-play';
+
+import TkLinkPhoneDialog from './tklinkphone';
 
 /**
  * 主工具条
@@ -15,6 +18,18 @@ import TkArrowRight from 'material-ui/svg-icons/navigation/chevron-right';
  * topicsNumber (总题数和当前题显示例如:1/8)
  */
 class TkToolBar extends Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      openLinkDialog:false
+    };
+  }
+  openLinkDialog(){
+    this.setState({openLinkDialog:true});
+  }
+  closeLinkDialog(){
+    this.setState({openLinkDialog:false});
+  }
 	render(){
 		return (
 			<Toolbar style={{backgroundColor:'#00BCD4'}}>
@@ -25,6 +40,9 @@ class TkToolBar extends Component{
           <ToolbarTitle text={'题库编辑器'} style={{color:'#FFFFFF'}}/>
         </ToolbarGroup>		        
         <ToolbarGroup>
+          <IconButton tooltip='使用手机录入' onClick={this.openLinkDialog.bind(this)}>
+            <TkLinkPhone  color='#FFFFFF'/>
+          </IconButton>
           {/*如果没有数值设置就不显示上一题、下一题导航*/}
           {this.props.topicsNumber.length>0?
 			     [<IconButton tooltip='上一题'>
@@ -34,7 +52,10 @@ class TkToolBar extends Component{
 			      <IconButton tooltip='下一题'  onTouchTap={this.props.onNextTopic}>
            <TkArrowRight  color='#FFFFFF'/>
            </IconButton>]:[]}
-			</ToolbarGroup>				
+			</ToolbarGroup>
+      <TkLinkPhoneDialog open={this.state.openLinkDialog}
+          closeme={this.closeLinkDialog.bind(this)}>
+      </TkLinkPhoneDialog>
 		</Toolbar>
 		);
 	}

@@ -8,6 +8,7 @@ import {List, ListItem} from 'material-ui/List';
 import MenuItem from 'material-ui/MenuItem';
 import IconButton from 'material-ui/IconButton';
 import TkCloseIcon from 'material-ui/svg-icons/navigation/close';
+import TkAddIcon from 'material-ui/svg-icons/content/add';
 import Subheader from 'material-ui/Subheader';
 import Toggle from 'material-ui/Toggle';
 /* 引用的图标 */
@@ -17,7 +18,8 @@ import ContentDrafts from 'material-ui/svg-icons/content/drafts';
 import ContentSend from 'material-ui/svg-icons/content/send';
 import IconBook from 'material-ui/svg-icons/file/folder';
 import IconUnit from 'material-ui/svg-icons/editor/format-align-justify';
-import 'whatwg-fetch'
+import 'whatwg-fetch';
+import TkAddBookDialog from './tkaddbook';
 
 /**
  * 书目边栏
@@ -33,6 +35,7 @@ class TkNavDrawer extends Component{
         this.state = {
             openDrawer:false,
             selectBookIndex:0,
+            openAddBookDialog:false
         };
         this.units = {};
     }
@@ -148,6 +151,14 @@ class TkNavDrawer extends Component{
             }
         }
     }
+    add(){
+        this.setState({openAddBookDialog:true});
+        console.log("add..");
+    }
+    closeAddBook(){
+        this.setState({openAddBookDialog:false});
+        console.log("close..");
+    }
     render(){
         let books,modules,units;
         if(this.books){
@@ -188,6 +199,9 @@ class TkNavDrawer extends Component{
                 <Toolbar>
                     <ToolbarTitle text='选择练习册'/>
                     <ToolbarGroup>
+                    <IconButton onClick={this.add.bind(this)}>
+                        <TkAddIcon />
+                    </IconButton>                         
                     <IconButton onClick={this.toggle.bind(this)}>
                         <TkCloseIcon />
                     </IconButton>                                                                     
@@ -201,7 +215,10 @@ class TkNavDrawer extends Component{
                 </SelectField>
                 <List /* 章节层次*/>
                     {modules}
-                </List>                    
+                </List>
+                <TkAddBookDialog open={this.state.openAddBookDialog}
+                    closeme={this.closeAddBook.bind(this)}>
+                    </TkAddBookDialog>                    
             </Drawer>
         );
     }

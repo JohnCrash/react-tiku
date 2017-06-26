@@ -1515,6 +1515,7 @@
 		/**
 		 * 解析Tex(MathJax)数学公式
 		 * TeX(MathJax) renderer
+		 * 渲染做了优化。并在最后使用swapPreviewContainer交换前后缓存。
 		 */
 		mathjaxRender : function(obj) {
 			let _this = this;
@@ -1525,8 +1526,7 @@
 			let typeset = function(){
 				let cb = function(){
 					_this.MJRcbcount--;
-					if(_this.MJRcbcount==0){
-						console.log("swap"+_this.MJRcbcount);
+					if(_this.MJRcbcount==0 && _this.MJRid==undefined){
 						_this.swapPreviewContainer();
 						editormd.onchange();
 					}
@@ -1550,7 +1550,7 @@
 					editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
 				}); 
 				
-				if(_this.MJRcbcount==undefined)
+				if(_this.MJRcbcount==undefined||_this.MJRcbcount<0)
 					_this.MJRcbcount = 0;
 				_this.MJRcbcount++;		
 				if(_this.MJRid){
