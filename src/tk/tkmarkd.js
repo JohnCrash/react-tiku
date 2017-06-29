@@ -71,12 +71,6 @@ class TkMarkd extends Component{
             this.markd = this.iframe.contentDocument.markd;
             this.markd.on('change',this.props.onkeyup);
             this.iframe.contentDocument.body.onresize=this.handleSizeChange.bind(this);
-            /**
-            var id = setInterval((()=>{
-                this.doFullScreen();
-                clearInterval(id);
-            }).bind(this),2000);
-             */
         }
         if(this.props.onLoad){
             this.props.onLoad();

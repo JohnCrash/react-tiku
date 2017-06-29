@@ -218,7 +218,7 @@ class TkNavDrawer extends Component{
                 </List>
                 <TkAddBookDialog open={this.state.openAddBookDialog}
                     closeme={this.closeAddBook.bind(this)}>
-                    </TkAddBookDialog>                    
+                </TkAddBookDialog>                    
             </Drawer>
         );
     }
