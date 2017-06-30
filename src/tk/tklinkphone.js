@@ -33,8 +33,21 @@ class TkLinkPhone extends Component{
     componentWillReceiveProps(nextProps){
         this.loadDeviceInfo();
     }
-    handleCommit(){
-        this.props.closeme();
+    handleCommit(){     
+        fetch(`/import`,{headers:{Connection:'Keep-Alive'}}).then(function(responese){
+			return responese.text();
+		}).then(function(data){
+			this.error = data;
+            if(data==='ok'){
+                this.props.closeme();
+            }
+		}.bind(this)).catch(function(e){
+			if(this.error){
+				this.messageBar(this.error);
+			}else{
+				this.messageBar(e.toString());
+			} 
+		}.bind(this)); 
     }
     addPhone(){
         let name = this.deviceName.getValue();
