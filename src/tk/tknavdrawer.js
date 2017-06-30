@@ -34,7 +34,9 @@ class TkNavDrawer extends Component{
         super(props);
         this.state = {
             openDrawer:false,
-            selectBookIndex:0,
+            selectBookSubject:null,
+            selectBookVersion:null,
+            selectBookPeriod:null,
             openAddBookDialog:false
         };
         this.units = {};
@@ -49,20 +51,30 @@ class TkNavDrawer extends Component{
             this.props.messageBar(str);
         }
     }
-    componentDidMount(){
-		//加载练习册
-        fetch('/book').then(function(response){
+    fetchGetJson(url,cb){
+        fetch(url).then(function(response){
             return response.text()
         }).then(function(data){
-		  this.error = 'error msg'
-          this.books = JSON.parse(data);
+		  this.error = data;
+          let json = JSON.parse(data);
+          if(json&&json.originalError&&json.originalError.info){
+              this.error = 'ERROR:'+json.originalError.info.message;
+              throw this.error;
+          }
+          cb(JSON.parse(data));
         }.bind(this)).catch(function(e){
             //加载数目失败
 			if(this.error)
-          		this.messageBar(this.error);
+          		this.messageBox(this.error);
 			else
-				this.messageBar(e.toString());
+				this.messageBox(e.toString());
         }.bind(this));
+    }
+    componentDidMount(){
+		//加载练习册
+        this.fetchGetJson('/BookSubject',(json)=>{
+            this.books = json;
+        });
     }
     //选择章
     handleNestedListToggle(item){
@@ -71,46 +83,56 @@ class TkNavDrawer extends Component{
             this.forceUpdate();
         }
         if(!this.units[item.props.primaryText]){
-            let request = encodeURI(`/module?Book=${this.currentBook}&Module=${item.props.primaryText}`);
-            fetch(request).then(function(response){
-                return response.text();
-            }.bind(this)).then(function(data){
-                this.error = data;
-                this.units[item.props.primaryText] = JSON.parse(data);
+            let request = encodeURI(`/Section?BookSubject=${this.currentBook}&BookVersion=${this.currentVersion}&BookPeriod=${this.currentPeriod}&BookChapter=${this.currentModule}`);
+            this.fetchGetJson(request,(json)=>{
+                this.units[item.props.primaryText] = json;
                 this.forceUpdate();
-            }.bind(this)).catch(function(e){
-                //加载出错
-                if(this.error){
-                    this.messageBox(this.error);
-                }else{
-                    this.messageBox(e.toString());
-                }
-            }.bind(this));
+            });
         }
     }
-    //选择练习册
-    handleSelectBookIndex(event, index, value){
-        if(this.currentBook !== this.books[value-1].BookName){
-            this.units = {}
-            this.modules = null;
-            this.currentModule = null;
-            this.currentBook = this.books[value-1].BookName;
-            let request = encodeURI(`/module?Book=${this.books[value-1].BookName}`);
-            fetch(request).then(function(response){
-                return response.text();
-            }.bind(this)).then(function(data){
-                //加载章
-                this.error = data;
-                this.modules = JSON.parse(data);
-                this.setState({selectBookIndex:value});
-            }.bind(this)).catch(function(e){
-                //加载出错
-                if(this.error){
-                    this.messageBox(this.error);
-                }else{
-                    this.messageBox(e.toString());
-                }
-            }.bind(this));
+    //选择科目
+    handleSelectBookSubject(event, index, value){
+        if(this.currentBook !== this.books[value-1].BookSubject){
+            this.currentBook = this.books[value-1].BookSubject;
+            this.currentVersion = null;
+            this.currentPeriod = null;
+            this.currentUnit = null;
+            let request = encodeURI(`/BookVersion?BookSubject=${this.currentBook}`);
+            this.fetchGetJson(request,(json)=>{
+                this.versions = json;
+                this.periods = null;
+                this.modules = null;
+                this.setState({selectBookSubject:index+1,
+                    selectBookVersion:null,
+                    selectBookPeriod:null});
+            });
+        }
+    }
+    //选择版本
+    handleSelectBookVersion(event, index, value){
+        if(this.currentVersion !== this.versions[value-1].BookVersion){
+            this.currentVersion = this.versions[value-1].BookVersion;
+            this.currentPeriod = null;
+            this.currentUnit = null;
+            let request = encodeURI(`/BookPeriod?BookSubject=${this.currentBook}&BookVersion=${this.currentVersion}`);
+            this.fetchGetJson(request,(json)=>{
+                this.periods = json;
+                this.modules = null;
+                this.setState({selectBookVersion:index+1,
+                    selectBookPeriod:null});
+            });
+        }
+    }
+    //选择册
+    handleSelectBookPeriod(event, index, value){
+        if(this.currentPeriod !== this.periods[value-1].BookPeriod){
+            this.currentPeriod = this.periods[value-1].BookPeriod;
+            this.currentUnit = null;
+            let request = encodeURI(`/Chapter?BookSubject=${this.currentBook}&BookVersion=${this.currentVersion}&BookPeriod=${this.currentPeriod}`);
+            this.fetchGetJson(request,(json)=>{
+                this.modules = json;
+                this.setState({selectBookPeriod:index+1});                
+            });
         }
     }
     handleUnitListToggle(item){
@@ -160,36 +182,48 @@ class TkNavDrawer extends Component{
         console.log("close..");
     }
     render(){
-        let books,modules,units;
+        let books,modules,units,versions,periods;
         if(this.books){
             let i = 1;
             books = this.books.map((item)=>{
-                return <MenuItem value={i++} leftIcon={<IconBook/>} primaryText={item.BookName} />;
+                return <MenuItem value={i++} leftIcon={<IconBook/>} primaryText={item.BookSubject} />;
             });
         }
+        if(this.versions){
+            let i = 1;
+            versions = this.versions.map((item)=>{
+                return <MenuItem value={i++} leftIcon={<IconBook/>} primaryText={item.BookVersion} />;
+            });            
+        }
+        if(this.periods){
+            let i = 1;
+            periods = this.periods.map((item)=>{
+                return <MenuItem value={i++} leftIcon={<IconBook/>} primaryText={item.BookPeriod} />;
+            });            
+        }        
         if(this.modules){
             let key = 1;
             modules = this.modules.map((item)=>{
                 let unit;
-                if(this.units[item.Module]){
-                    unit = this.units[item.Module].map((item)=>{
+                if(this.units[item.BookUnit]){
+                    unit = this.units[item.BookUnit].map((item)=>{
                         return <ListItem leftIcon={<IconUnit />}
-                        style={item.Unit==this.currentUnit?{backgroundColor:'#00BCD4'}:{}}
+                        style={item.BookLesson==this.currentUnit?{backgroundColor:'#00BCD4'}:{}}
                         primaryTogglesNestedList={true}
                         onNestedListToggle={this.handleUnitListToggle.bind(this)}
                         unitJson={item}
-                        primaryText={item.Unit}/>;
+                        primaryText={item.BookLesson}/>;
                     });
                 }else{
                     unit = [<ListItem leftIcon={<IconUnit />} primaryText={'pending...'}/>];
                 }
                 return <ListItem key={key++}
                 leftIcon={<IconBook />} 
-                primaryText={item.Module}
+                primaryText={item.BookUnit}
                 onNestedListToggle={this.handleNestedListToggle.bind(this)}
                 primaryTogglesNestedList={true}
                 nestedItems={unit}
-                open={this.currentModule===item.Module}       
+                open={this.currentModule===item.BookUnit}       
                 />;
             });
         }
@@ -197,22 +231,34 @@ class TkNavDrawer extends Component{
             <Drawer docked={false} width={400} ref={(drawer)=>{this.drawer = drawer}}
                 open={this.state.openDrawer}>
                 <Toolbar>
-                    <ToolbarTitle text='选择练习册'/>
+                    <ToolbarTitle text='选择章节'/>
                     <ToolbarGroup>
-                    <IconButton onClick={this.add.bind(this)}>
-                        <TkAddIcon />
-                    </IconButton>                         
                     <IconButton onClick={this.toggle.bind(this)}>
                         <TkCloseIcon />
                     </IconButton>                                                                     
                     </ToolbarGroup>
                 </Toolbar>
-                <SelectField /* 练习册选择 */
-                    value={this.state.selectBookIndex}
+                <SelectField
+                    floatingLabelText={"科目"}
+                    value={this.state.selectBookSubject}
                     fullWidth={true}
-                    onChange={this.handleSelectBookIndex.bind(this)}>
+                    onChange={this.handleSelectBookSubject.bind(this)}>
                     {books}
                 </SelectField>
+                <SelectField
+                    floatingLabelText={"版本"}
+                    value={this.state.selectBookVersion}
+                    fullWidth={true}
+                    onChange={this.handleSelectBookVersion.bind(this)}>
+                    {versions}
+                </SelectField>    
+                <SelectField
+                    floatingLabelText={"册"}
+                    value={this.state.selectBookPeriod}
+                    fullWidth={true}
+                    onChange={this.handleSelectBookPeriod.bind(this)}>
+                    {periods}
+                </SelectField>                             
                 <List /* 章节层次*/>
                     {modules}
                 </List>
