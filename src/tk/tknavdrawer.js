@@ -61,7 +61,7 @@ class TkNavDrawer extends Component{
               this.error = 'ERROR:'+json.originalError.info.message;
               throw this.error;
           }
-          cb(JSON.parse(data));
+          cb(json);
         }.bind(this)).catch(function(e){
             //加载数目失败
 			if(this.error)
@@ -141,34 +141,13 @@ class TkNavDrawer extends Component{
             this.forceUpdate();
             //回调上一层组件，通知有一个单元选择
             if(this.props.onSelectUnit){
-                if(item.props.unitJson.BookIndex){
-                    let request = encodeURI(`/unit?BookIndex=${item.props.unitJson.BookIndex}`);
-                    fetch(request).then(function(response){
-                        return response.text();
-                    }).then(function(data){
-                        this.error = data;
-                        this.props.onSelectUnit(JSON.parse(data));
-                    }.bind(this)).catch(function(e){
-                        if(this.error){
-                            this.messageBox(this.error);
-                        }else{
-                            this.messageBox(e.toString());
-                        }                    
-                    }.bind(this));
-                }else if(item.props.unitJson.UnitBegin!==undefined && item.props.unitJson.UnitEnd!==undefined){
-                    let request = encodeURI(`/unitbyindex?UnitBegin=${item.props.unitJson.UnitBegin}&UnitEnd=${item.props.unitJson.UnitEnd}`);
-                    fetch(request).then(function(response){
-                        return response.text();
-                    }).then(function(data){
-                        this.error = data;
-                        this.props.onSelectUnit(JSON.parse(data));
-                    }.bind(this)).catch(function(e){
-                        if(this.error){
-                            this.messageBox(this.error);
-                        }else{
-                            this.messageBox(e.toString());
-                        }                    
-                    }.bind(this));                    
+                if(item.props.unitJson.SectionID){
+                    let request = encodeURI(`/SectionPage10?SectionID=${item.props.unitJson.SectionID}`);
+                    this.fetchGetJson(request,(json)=>{
+                        this.props.onSelectUnit(json);
+                    });
+                }else{
+                    this.messageBox('该节不存在SectionID');                
                 }
             }
         }
