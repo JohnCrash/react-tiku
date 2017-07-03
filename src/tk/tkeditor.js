@@ -31,9 +31,11 @@ class TkEditor extends Component{
 			errorOpen:false,
             errorMsg:'',
 			mode:'browser',
-			currentPage:1,
 			currentTopic:1,
 			topics:[],
+			current:1,
+			count:0,
+			secation:0,
 			topicsNumber:'',
 			image:'',
 			css:'',
@@ -199,14 +201,40 @@ class TkEditor extends Component{
 	 * 		items //当前页包含的题数组
 	 * }
 	 */
-	handleSelectUnit(page){
+	handleSelectUnit(page,b){
 		if(this.currentPage!==page){
 			this.currentPage = page;
-			this.setState({currentPage:page.currentPage,
-			topics:page.items});
+			this.setState({
+				topics:page.items,
+				current:page.currentPage,
+				count:page.pageCount,
+				section:page.sectionID
+			});
 			//关闭边栏
-			this.handleToolMenu();
+			if(!b)
+				this.handleToolMenu();
 		}
+	}
+	//切换页
+	handlePage(i){		
+		let url = encodeURI(`/SectionPage10?SectionID=${this.currentPage.sectionID}&SectionPage=${i}`);
+        fetch(url).then(function(response){
+            return response.text()
+        }).then(function(data){
+		  this.error = data;
+          let json = JSON.parse(data);
+          if(json&&json.originalError&&json.originalError.info){
+              this.error = 'ERROR:'+json.originalError.info.message;
+              throw this.error;
+          }
+          this.handleSelectUnit(json,true);
+        }.bind(this)).catch(function(e){
+            //加载数目失败
+			if(this.error)
+          		this.messageBar(this.error);
+			else
+				this.messageBar(e.toString());
+        }.bind(this));
 	}
 	handleNextTopic(){
 		if(this.currentUnit){
@@ -241,7 +269,12 @@ class TkEditor extends Component{
 				<TkNavDrawer ref={(drawer)=>{this.drawer = drawer}} 
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
-				<TkBrowser topics={this.state.topics} messageBar={this.messageBar.bind(this)}/>
+				<TkBrowser topics={this.state.topics}
+				current={this.state.current}
+				count={this.state.count}
+				section={this.state.section}
+				onPage={this.handlePage.bind(this)}
+				messageBar={this.messageBar.bind(this)}/>
 				{/*
 				<TkFrame title='原题' content={this.state.image} source={this.state.source} tid={this.state.tid} type={0}/>
 				<TkFrame title='题目' messageBar={this.messageBar.bind(this)}

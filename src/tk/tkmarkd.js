@@ -1,5 +1,45 @@
 import React, {Component} from 'react';
 
+function editormd_preview(body){
+    return `<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="editormd/css/editormd.preview.css">
+        <link rel="stylesheet" type="text/css" href="css/topics.css">
+    </head>
+    <body>
+        <div id="layout">
+            <div id="test-editormd-view2">
+                <textarea id="append-test" style="display:none;">${body}</textarea>
+            </div>
+        </div>
+        <script src="editormd/examples/js/jquery.min.js"></script>
+        <script src="editormd/lib/marked.min.js"></script>
+        <script src="editormd/lib/prettify.min.js"></script>
+        
+        <script src="editormd/lib/raphael.min.js"></script>
+        <script src="editormd/lib/underscore.min.js"></script>
+        <script src="editormd/lib/sequence-diagram.min.js"></script>
+        <script src="editormd/lib/flowchart.min.js"></script>
+        <script src="editormd/lib/jquery.flowchart.min.js"></script>
+
+        <script src="editormd/editormd.js"></script>
+        <script type="text/javascript">
+            $(function() {
+            testEditormdView2 = editormd.markdownToHTML("test-editormd-view2", {
+                htmlDecode      : "style,script,iframe",  // you can filter tags decode
+                emoji           : true,
+                taskList        : true,
+                tex             : false,
+                mathjax         : true,
+                flowChart       : true,  // 默认不解析
+                sequenceDiagram : true,  // 默认不解析
+            });                 
+        });
+        </script>
+    </body>
+    </html>`
+}
+
 function editormd(body,height){
     return `<!DOCTYPE html>
 <html lang="zh">
@@ -50,26 +90,28 @@ function editormd(body,height){
  * 使用editor.md
  */
 class TkMarkd extends Component{
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
+        let content = props.content?props.content:"";
         this.state={
-            content:''
+            content:props.preview?editormd_preview(content,props.height):editormd(content,props.height)
         };
     }
     componentWillMount(){
         let content = this.props.content?this.props.content:"";
-        this.setState({content:editormd(content,this.props.height)});      
+        this.setState({content:this.props.preview?editormd_preview(content):editormd(content,this.props.height)});      
     }
     componentWillReceiveProps(nextProps){
         if(this.props.qid!==nextProps.qid){
             let content = nextProps.content?nextProps.content:"";
-            this.setState({content:editormd(content,nextProps.height)});
+            this.setState({content:nextProps.preview?editormd_preview(content):editormd(content,nextProps.height)});
         }
     }    
     handleLoad(){
         if(this.iframe && this.iframe.contentDocument){
             this.markd = this.iframe.contentDocument.markd;
-            this.markd.on('change',this.props.onkeyup);
+            if(this.markd && 'on' in this.markd)
+                this.markd.on('change',this.props.onkeyup);
             this.iframe.contentDocument.body.onresize=this.handleSizeChange.bind(this);
         }
         if(this.props.onLoad){

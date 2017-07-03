@@ -575,6 +575,7 @@ class TkFrame extends Component{
                 </iframe>);
             }else if(this.state.mode=="markd"){
                 content = <TkMarkd 
+                preview = {this.props.browser}
                 qid = {this.props.qid}
                 onLoad={this.handleLoad.bind(this)}
                 ref = {(iframe)=>{this.markd = iframe}}
