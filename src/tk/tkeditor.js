@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import TkToolBar from './tktoolbar';
 import TkFrame from './tkframe';
 import TkNavDrawer from './tknavdrawer';
+import TkBrowser from './tkbrowser';
 /* 在屏幕下方弹上一个消息 */
 import Snackbar from 'material-ui/Snackbar';
 import 'whatwg-fetch'
@@ -29,6 +30,10 @@ class TkEditor extends Component{
 			isNavDrawerOpen:false,
 			errorOpen:false,
             errorMsg:'',
+			mode:'browser',
+			currentPage:1,
+			currentTopic:1,
+			topics:[],
 			topicsNumber:'',
 			image:'',
 			css:'',
@@ -69,7 +74,7 @@ class TkEditor extends Component{
 		//打开边栏
 		this.drawer.toggle();
 	}
-	toHtmlDocument(css,body){
+	toHtmlDocument(body){
 		let newbody = removeJavaScriptTag(body);
 		return `<html>
 		<head>
@@ -186,25 +191,19 @@ class TkEditor extends Component{
 			} 
 		}.bind(this));
 	}
-	handleSelectUnit(unit){
-		if(this.currentUnit!==unit){
-			this.currentUnit = unit;
-			this.curTopicsIndex = unit.length===0?0:1;
-			this.totalTopics = unit.length;
-			try{
-				this.setState({topicsNumber:`${this.curTopicsIndex}/${this.totalTopics}`});
-			}catch(e){
-				console.log(e.toString());
-			}
-			if(this.curTopicsIndex===1){
-				this.loadTopic(this.currentUnit[this.curTopicsIndex-1].QuestionID);
-			}else{
-				this.setState({
-				body:'',
-				answer:'',
-				analysis:'',
-				image:''});
-			}
+	/**
+	 * {
+	 * 		sectionID //当前单元ID
+	 * 		pageCount //当前单元题的页数，每页固定10
+	 * 		currentPage //当前页
+	 * 		items //当前页包含的题数组
+	 * }
+	 */
+	handleSelectUnit(page){
+		if(this.currentPage!==page){
+			this.currentPage = page;
+			this.setState({currentPage:page.currentPage,
+			topics:page.items});
 			//关闭边栏
 			this.handleToolMenu();
 		}
@@ -242,6 +241,8 @@ class TkEditor extends Component{
 				<TkNavDrawer ref={(drawer)=>{this.drawer = drawer}} 
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
+				<TkBrowser topics={this.state.topics} messageBar={this.messageBar.bind(this)}/>
+				{/*
 				<TkFrame title='原题' content={this.state.image} source={this.state.source} tid={this.state.tid} type={0}/>
 				<TkFrame title='题目' messageBar={this.messageBar.bind(this)}
 					seat = {this.state.seat_body}
@@ -275,7 +276,7 @@ class TkEditor extends Component{
 					markd={this.state.markd_tag}
 					messageBar={this.messageBar.bind(this)}
 					qid={this.state.qid}
-					type={4}/>
+					type={4}/> */}
 				<Snackbar open={this.state.errorOpen} 
 				bodyStyle={{backgroundColor:this.state.messageColor}}
                 message={this.state.errorMsg} 

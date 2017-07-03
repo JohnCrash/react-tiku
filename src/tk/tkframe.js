@@ -16,6 +16,7 @@ import TkUpload from 'material-ui/svg-icons/file/cloud-upload';
 import TkAutomatic from 'material-ui/svg-icons/notification/adb';
 import TkManual from 'material-ui/svg-icons/maps/directions-walk';
 import TkMarkdown from 'material-ui/svg-icons/communication/swap-calls';
+import TkBrowserEdit from 'material-ui/svg-icons/editor/mode-edit';
 
 import TkHtmlViewer from './tkhtmlviewer';
 import TkTestDailog from './tktest';
@@ -45,6 +46,19 @@ function forChildren(node,cb){
     }
 }
 
+function getTypeString(id){
+    switch(id){
+        case 1:return "选择题";
+        case 2:return "填空题";
+        case 3:return "解答题";
+        case 4:return "其他";
+        case 5:return "连线题";
+        case 6:return "排序";
+        case -1:return "忽略";
+        case 0:return "未处理";
+    }
+    return "";
+}
 /**
  * 具体的html编辑
  * type = (0:image,1:body,2:answer,3:analysis)
@@ -56,10 +70,27 @@ function forChildren(node,cb){
  * seat = (0.source,1.content,2.markd)
  * answer (为了分析交互答案)
  * title = (标题)
+ * 属性browser表示处于浏览模式
  */
 class TkFrame extends Component{
-	constructor(){
-		super();      
+	constructor(props){
+		super(props);  
+        //确定模式
+        let mode = "html";
+        let content = "";
+        if('seat' in props){
+            if(props.seat==0){
+                content = props.source;
+            }else if(props.seat==1){
+                content = props.content;
+            }else if(props.seat==2){
+                mode = "markd";
+            }else{
+                content = props.source;
+            }
+        }else{
+            content = props.content;
+        }            
         this.state={
             expendHTML:false,
             iframeHeight:0,
@@ -69,8 +100,8 @@ class TkFrame extends Component{
             htmlContent:'',
             openTestDialog:false,
             testContent:"",
-            mode:"html",
-            content:'',
+            mode:mode,
+            content:content,
             markd:"",
             seat:0,
             isMarkdContentChange:false,
@@ -85,7 +116,8 @@ class TkFrame extends Component{
             this.isIFrameLoad = false;
             this.isFirstLoad = true;
             //自动保存上一个
-            this.handleUpload();
+            if(!nextProps.browser)
+                this.handleUpload();
             //新的加载
             if(!nextProps.hasBody){
                 if(nextProps.topicsType>=1&&nextProps.topicsType<=3){
@@ -177,12 +209,14 @@ class TkFrame extends Component{
                  */
                 cb();
                 id = setInterval(cb,100);
-                /**
-                 * 这里打开编辑功能
-                 */
-                document.designMode = 'on';
-                document.contentEditable=true;
-                document.onkeyup=this.handleKeyup.bind(this);
+                if(!this.props.browser){
+                    /**
+                     * 这里打开编辑功能
+                     */
+                    document.designMode = 'on';
+                    document.contentEditable=true;
+                    document.onkeyup=this.handleKeyup.bind(this);
+                }
             }else{
                 this.setState({iframeHeight:0,
                     topicsType:this.props.topicsType});
@@ -512,6 +546,10 @@ class TkFrame extends Component{
             seat:2});
         }
     }
+    //当在浏览模式下点击了编辑
+    handleBrowserEdit(event){
+        console.log('edit');
+    }
 	render(){
         let tool,saveTool,optionTool,topic_image,content;
         if(!this.props.content || this.props.content.length===0){
@@ -617,27 +655,33 @@ class TkFrame extends Component{
         }
 		return (<Page style={{margin:32}}>
             <Toolbar>
+                {!this.props.browser?
                 <ToolbarGroup>
                     <ToolbarTitle text={this.props.title || 'None'} />
                     {saveTool}
                     {tool}
                     {optionTool}
-                </ToolbarGroup>
+                </ToolbarGroup>:<ToolbarGroup><ToolbarTitle text={getTypeString(this.state.topicsType)} /></ToolbarGroup>}
                 <ToolbarGroup>
-                {this.props.type==1 &&
+                {this.props.type==1 && !this.props.browser &&
                 <DropDownMenu value={this.state.topicsType}
                     onChange={this.handleDropDownMenuChange.bind(this)}>
                     <MenuItem value={1} primaryText="选择题" />
                     <MenuItem value={2} primaryText="填空题" />
                     <MenuItem value={3} primaryText="解答题" />
+                    <MenuItem value={5} primaryText="连线题" />
+                    <MenuItem value={6} primaryText="排序" />
                     <MenuItem value={4} primaryText="其他" />
                     <MenuItem value={-1} primaryText="忽略" />
                     <MenuItem value={0} primaryText="未处理" />
                 </DropDownMenu>
                 }
-                {this.state.mode=="html"?
+                {this.state.mode=="html"&&!this.props.browser?
                     <IconButton touch={true} onTouchTap={this.handleHTMLContent.bind(this)}>
                         <CodeIcon />
+                    </IconButton>:undefined}                 
+                {this.props.browser?<IconButton tooltip='编辑' onClick={this.handleBrowserEdit.bind(this)}>
+                        <TkBrowserEdit color={toolbarIconColor}/>
                     </IconButton>:undefined}
                 </ToolbarGroup>                
             </Toolbar>
