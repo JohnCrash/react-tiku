@@ -59,6 +59,23 @@ function getTypeString(id){
     }
     return "";
 }
+
+function getTypeColor(id){
+    switch(id){
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            return '#69F0AE';
+        case -1:
+            return '#BDBDBD';
+        case 0:
+            return '#EF9A9A';
+    }
+    return '#E0E0E0';
+}
 /**
  * 具体的html编辑
  * type = (0:image,1:body,2:answer,3:analysis)
@@ -70,12 +87,15 @@ function getTypeString(id){
  * seat = (0.source,1.content,2.markd)
  * answer (为了分析交互答案)
  * title = (标题)
+ * index = 浏览模式下第几题的索引
  * 属性browser表示处于浏览模式
  */
 class TkFrame extends Component{
 	constructor(props){
 		super(props);  
         //确定模式
+        this.isIFrameLoad = false;
+        this.isFirstLoad = true;        
         let mode = "html";
         let content = "";
         if('seat' in props){
@@ -86,16 +106,16 @@ class TkFrame extends Component{
             }else if(props.seat==2){
                 mode = "markd";
             }else{
-                content = props.source;
+                content = props.content?props.content:props.source;
             }
         }else{
-            content = props.content;
+            content = props.content?props.content:props.source;
         }            
         this.state={
             expendHTML:false,
             iframeHeight:0,
             isAuto:true,
-            topicsType:-1,
+            topicsType:props.topicsType,
             isContentChange:false,
             htmlContent:'',
             openTestDialog:false,
@@ -112,7 +132,7 @@ class TkFrame extends Component{
     componentDidMount(){
     }
     componentWillReceiveProps(nextProps){
-        if(this.props.qid!=nextProps.qid){
+ //       if(this.props.qid!=nextProps.qid){
             this.isIFrameLoad = false;
             this.isFirstLoad = true;
             //自动保存上一个
@@ -141,10 +161,10 @@ class TkFrame extends Component{
                 }else if(nextProps.seat==2){
                     mode = "markd";
                 }else{
-                    content = nextProps.source;
+                    content = nextProps.content?nextProps.content:nextProps.source;
                 }
             }else{
-                content = nextProps.content;
+                content = nextProps.content?nextProps.content:nextProps.source;
             }
             this.setState({isContentChange:false,//新加载都是没有改变
                 topicsType:nextProps.topicsType,
@@ -152,7 +172,7 @@ class TkFrame extends Component{
                 content:content,
                 seat:nextProps.seat,
                 markd:nextProps.markd});
-        }
+//        }
     }
     componentWillUnmount(){
     }
@@ -169,7 +189,7 @@ class TkFrame extends Component{
             height = this.markd.getHeight();
             this.markd.doFullScreen();
         }
-        this.setState({iframeHeight:height<32?32:height});        
+        this.setState({iframeHeight:height<32?32:height});
     }
     onHtmlContentChange(content){
         //去掉内部操作用的JavaScript代码,见tkeditor.toHtmlDocument
@@ -267,7 +287,7 @@ class TkFrame extends Component{
         if(this.state.mode=="html"){
             this.handleReset();
             //上面的调用将重新装载,并触发iframe.onLoad函数
-            var id = setInterval((()=>{
+            function cb(){
                 if(this.isIFrameLoad) //已经加载完成
                     clearInterval(id);
                 else
@@ -305,7 +325,9 @@ class TkFrame extends Component{
                     this.onHtmlContentChange(this.body.outerHTML);
                     this.recalcIFrameSize();
                 }
-            this.setState({topicsType:value});}).bind(this),100);
+                this.setState({topicsType:value});
+            }
+            var id = setInterval(cb.bind(this),100);
         }else{//markd
             this.setState({isMarkdContentChange:true,topicsType:value});
         }
@@ -354,7 +376,7 @@ class TkFrame extends Component{
      * 如果成功返回true,失败返回false
      */
     automaticOption(){
-        let [result,answer] = optionAuto(this.props.content,this.props.answer);
+        let [result,answer] = optionAuto(this.state.content,this.props.answer);
         if(result){
             this.iframe.srcdoc = result;
             let a = answer ? `答案为${answer}`:'但未解析出正确答案';
@@ -376,6 +398,7 @@ class TkFrame extends Component{
         if(this.state.mode=="html"){
             this.isIFrameLoad = false;
             this.iframe.srcdoc = this.props.source;
+            this.setState({content:this.props.source});
             this.checkChange();
         }else{//markd
             this.setState({isMarkdContentChange:true,
@@ -390,9 +413,10 @@ class TkFrame extends Component{
     handleUpload(event){
         if(this.state.mode=="html"){
             if(this.state.isContentChange){
+                this.state.isContentChange = false;
                 //因为使用handleKeyup不能侦测到全部的改变，这里强制更新
                 this.onHtmlContentChange(this.body.outerHTML);
-                var updateData = {};
+                var updateData = {mode:'html'};
                 switch(this.props.type){
                     case 1: //body
                         updateData.state = this.state.topicsType;
@@ -412,6 +436,12 @@ class TkFrame extends Component{
                         updateData.tag = this.state.htmlContent;
                         break;
                 }
+                /**
+                 * 通知更新
+                 */
+                if(this.props.onSave){
+                    this.props.onSave(updateData);
+                }                
                 /**
                  * 如果html模式下确保情况对应markd格式的数据
                  */
@@ -435,7 +465,8 @@ class TkFrame extends Component{
             }
         }else{//markd
             if(this.state.isMarkdContentChange){
-                var updateData = {};
+                this.state.isMarkdContentChange = false;
+                var updateData = {mode:'markd'};
                 switch(this.props.type){
                     case 1: //body
                         updateData.seat_body = 2;
@@ -454,7 +485,13 @@ class TkFrame extends Component{
                         updateData.seat_tag = 2;
                         updateData.markd_tag = this.markd.getMarkdown();
                         break;
-                }              
+                }      
+                /**
+                 * 通知更新
+                 */
+                if(this.props.onSave){
+                    this.props.onSave(updateData);
+                }                         
                 fetch(`upload?QuestionID=${this.props.qid}`,
                     {method:'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -547,12 +584,12 @@ class TkFrame extends Component{
         }
     }
     //当在浏览模式下点击了编辑
-    handleBrowserEdit(event){
-        console.log('edit');
+    handleBrowserEdit(index,event){
+        this.props.onEdit(index);
     }
 	render(){
         let tool,saveTool,optionTool,topic_image,content;
-        if(!this.props.content || this.props.content.length===0){
+        if(!this.state.content || this.state.content.length===0){
             return null;
         }
         if(this.props.type==0){
@@ -654,8 +691,10 @@ class TkFrame extends Component{
                         </FlatButton>];
             }
         }
-		return (<Page style={{margin:32}}>
-            <Toolbar>
+		return (<Page 
+        transitionEnabled={false}
+        style={{margin:32}}>
+            <Toolbar style={{backgroundColor:getTypeColor(this.state.topicsType)}}>
                 {!this.props.browser?
                 <ToolbarGroup>
                     <ToolbarTitle text={this.props.title || 'None'} />
@@ -681,12 +720,12 @@ class TkFrame extends Component{
                     <IconButton touch={true} onTouchTap={this.handleHTMLContent.bind(this)}>
                         <CodeIcon />
                     </IconButton>:undefined}                 
-                {this.props.browser?<IconButton tooltip='编辑' onClick={this.handleBrowserEdit.bind(this)}>
+                {this.props.browser?<IconButton tooltip='编辑' onClick={this.handleBrowserEdit.bind(this,this.props.index)}>
                         <TkBrowserEdit color={toolbarIconColor}/>
                     </IconButton>:undefined}
                 </ToolbarGroup>                
             </Toolbar>
-            <TkHtmlViewer expend={this.state.expendHTML}>{this.state.htmlContent}</TkHtmlViewer>
+            {<TkHtmlViewer expend={this.state.expendHTML}>{this.state.htmlContent}</TkHtmlViewer>}
             {topic_image}
             {content}
             <TkTestDailog 

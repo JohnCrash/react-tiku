@@ -136,20 +136,20 @@ class TkNavDrawer extends Component{
         }
     }
     handleUnitListToggle(item){
-        if(this.currentUnit!==item.props.primaryText){
-            this.currentUnit = item.props.primaryText;
-            this.forceUpdate();
-            //回调上一层组件，通知有一个单元选择
-            if(this.props.onSelectUnit){
-                if(item.props.unitJson.SectionID){
-                    let request = encodeURI(`/SectionPage10?SectionID=${item.props.unitJson.SectionID}`);
-                    this.fetchGetJson(request,(json)=>{
-                        this.props.onSelectUnit(json);
-                    });
-                }else{
-                    this.messageBox('该节不存在SectionID');                
+        if(item.props.unitJson && 'SectionID' in item.props.unitJson){
+            if(this.currentUnit!==item.props.unitJson.SectionID){
+                this.currentUnit = item.props.unitJson.SectionID;
+                this.forceUpdate();
+                //回调上一层组件，通知有一个单元选择
+                if(this.props.onSelectUnit){
+                        let request = encodeURI(`/SectionPage10?SectionID=${item.props.unitJson.SectionID}`);
+                        this.fetchGetJson(request,(json)=>{
+                            this.props.onSelectUnit(json);
+                        });
                 }
             }
+        }else{
+            this.messageBox('该节不存在SectionID');
         }
     }
     add(){
@@ -187,7 +187,7 @@ class TkNavDrawer extends Component{
                 if(this.units[item.BookUnit]){
                     unit = this.units[item.BookUnit].map((item)=>{
                         return <ListItem leftIcon={<IconUnit />}
-                        style={item.BookLesson==this.currentUnit?{backgroundColor:'#00BCD4'}:{}}
+                        style={item.SectionID==this.currentUnit?{backgroundColor:'#00BCD4'}:{}}
                         primaryTogglesNestedList={true}
                         onNestedListToggle={this.handleUnitListToggle.bind(this)}
                         unitJson={item}

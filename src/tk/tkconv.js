@@ -10,6 +10,7 @@ function removeJavaScriptTag(html){
 }
 
 function toHtmlDocument(body){
+    if(!body)return body;
     let newbody = removeJavaScriptTag(body);
     return `<html>
     <head>

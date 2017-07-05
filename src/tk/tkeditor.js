@@ -3,6 +3,7 @@ import TkToolBar from './tktoolbar';
 import TkFrame from './tkframe';
 import TkNavDrawer from './tknavdrawer';
 import TkBrowser from './tkbrowser';
+import TkEdit from './tkedit';
 /* 在屏幕下方弹上一个消息 */
 import Snackbar from 'material-ui/Snackbar';
 import 'whatwg-fetch'
@@ -36,30 +37,7 @@ class TkEditor extends Component{
 			current:1,
 			count:0,
 			secation:0,
-			topicsNumber:'',
-			image:'',
-			css:'',
-			source:'',
-			qid:-1,
-			tid:'',
-			topicsType:-1,
-			messageColor:warningColor,
-			body:'',
-			answer:'',
-			analysis:'',
-			tag:'',			
-			markd_body:'',
-			markd_answer:'',
-			markd_analysis:'',
-			markd_tag:'',
-			source_body:'',
-			source_answer:'',
-			source_analysis:'',
-			source_tag:'',			
-			seat_body:'',
-			seat_answer:'',
-			seat_analysis:'',
-			seat_tag:'',			
+			editIndex:-1,			
 		}
 	}
 	//弹出一个错误条
@@ -208,7 +186,9 @@ class TkEditor extends Component{
 				topics:page.items,
 				current:page.currentPage,
 				count:page.pageCount,
-				section:page.sectionID
+				section:page.sectionID,
+				mode:'browser',
+				editIndex:-1,
 			});
 			//关闭边栏
 			if(!b)
@@ -217,7 +197,7 @@ class TkEditor extends Component{
 	}
 	//切换页
 	handlePage(i){		
-		let url = encodeURI(`/SectionPage10?SectionID=${this.currentPage.sectionID}&SectionPage=${i}`);
+		let url = encodeURI(`/SectionPage10?SectionID=${this.currentPage.sectionID}&SectionPage=${i}&PageCount=${this.currentPage.pageCount}`);
         fetch(url).then(function(response){
             return response.text()
         }).then(function(data){
@@ -235,6 +215,10 @@ class TkEditor extends Component{
 			else
 				this.messageBar(e.toString());
         }.bind(this));
+	}
+	//切换题进行编辑
+	handleTopics(i){
+		console.log(i);
 	}
 	handleNextTopic(){
 		if(this.currentUnit){
@@ -258,6 +242,17 @@ class TkEditor extends Component{
 			this.messageBar('请先选择练习册');
 		}
 	}
+	handleEdit(i){
+		this.setState({mode:'edit',editIndex:i});
+	}
+	handleReturnBrowser(){
+		this.edit.save();
+		this.setState({mode:'browser'});
+		this.forceUpdate();
+	}
+	handleAddTopic(){
+		console.log('add topic...');
+	}
 	render(){
 		return (
 			<div>
@@ -265,51 +260,30 @@ class TkEditor extends Component{
 				onPrevTopic={this.handlePrevTopic.bind(this)}
 				onNextTopic={this.handleNextTopic.bind(this)}
 				topicsNumber={this.state.topicsNumber}
-				onToolMenu={this.handleToolMenu.bind(this)}/>
+				onToolMenu={this.handleToolMenu.bind(this)}
+				onAddTopic={this.handleAddTopic.bind(this)}
+				openReturnBrowser={this.state.mode!=="browser"}
+				onReturnBrowser={this.handleReturnBrowser.bind(this)}/>
 				<TkNavDrawer ref={(drawer)=>{this.drawer = drawer}} 
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
-				<TkBrowser topics={this.state.topics}
-				current={this.state.current}
-				count={this.state.count}
-				section={this.state.section}
-				onPage={this.handlePage.bind(this)}
-				messageBar={this.messageBar.bind(this)}/>
-				{/*
-				<TkFrame title='原题' content={this.state.image} source={this.state.source} tid={this.state.tid} type={0}/>
-				<TkFrame title='题目' messageBar={this.messageBar.bind(this)}
-					seat = {this.state.seat_body}
-					source = {this.state.source_body}
-					content={this.state.body}
-					markd={this.state.markd_body}
-					answer={this.state.answer}
-					type={1}
-					qid={this.state.qid}
-					topicsType={this.state.topicsType}/>
-				<TkFrame title='解答' 
-					seat = {this.state.seat_answer}
-					source = {this.state.source_answer}
-					content={this.state.answer} 
-					markd={this.state.markd_answer}
-					messageBar={this.messageBar.bind(this)}
-					qid={this.state.qid}
-					type={2}/>
-				<TkFrame title='分析' 
-					seat = {this.state.seat_analysis}
-					source = {this.state.source_analysis}
-					content={this.state.analysis} 
-					markd={this.state.markd_analysis}
-					messageBar={this.messageBar.bind(this)} 
-					qid={this.state.qid}
-					type={3}/>
-				<TkFrame title='知识点' 
-					seat = {this.state.seat_tag}
-					source = {this.state.source_tag}
-					content={this.state.tag}
-					markd={this.state.markd_tag}
-					messageBar={this.messageBar.bind(this)}
-					qid={this.state.qid}
-					type={4}/> */}
+				<div style={{display:this.state.mode==="browser"?undefined:'none'}}>
+					<TkBrowser topics={this.state.topics}
+					current={this.state.current}
+					count={this.state.count}
+					section={this.state.section}
+					onPage={this.handlePage.bind(this)}
+					onEdit={this.handleEdit.bind(this)}
+					messageBar={this.messageBar.bind(this)}/>
+				</div>
+				<div style={{display:this.state.mode!=="browser"?undefined:'none'}}>
+					<TkEdit topics={this.state.topics}
+						current={this.state.editIndex}
+						section={this.state.section}
+						onTopic={this.handleTopics.bind(this)}
+						messageBar={this.messageBar.bind(this)}
+						ref={(iframe)=>{this.edit = iframe;}}/>
+				</div>
 				<Snackbar open={this.state.errorOpen} 
 				bodyStyle={{backgroundColor:this.state.messageColor}}
                 message={this.state.errorMsg} 

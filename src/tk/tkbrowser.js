@@ -40,6 +40,7 @@ class TkBrowser extends Component{
     }
     render(){
         let pageButton;
+        let i = 0;
         if(this.props.count){
             pageButton = [];
             pageButton.push(<RaisedButton label={'<'} style={style} onTouchTap={this.handlePrev.bind(this)}/>);
@@ -50,16 +51,19 @@ class TkBrowser extends Component{
         return <div><div style={{textAlign:"center"}}>{pageButton}</div>
             <div>
             {this.props.topics.map((item)=>{
-                return <TkFrame title='题目' messageBar={this.props.messageBar}
+                console.log(item.state);
+                return <TkFrame title='' messageBar={this.props.messageBar}
                     browser = {true}
+                    index={i++}
                     seat = {item.seat_body}
                     source = {toHtmlDocument(item.topic_body)}
                     content={toHtmlDocument(item.body)}
                     markd={item.markd_body}
                     answer={item.answer}
                     type={1}
-                    qid={item.qid}
-                    topicsType={item.state} />;
+                    qid={item.rowid}
+                    topicsType={item.state}
+                    onEdit={this.props.onEdit} />;
                 })}
             </div>
             <div style={{textAlign:"center"}}>{pageButton}</div>
