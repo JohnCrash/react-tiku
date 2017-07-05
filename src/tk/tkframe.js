@@ -122,7 +122,7 @@ class TkFrame extends Component{
             testContent:"",
             mode:mode,
             content:content,
-            markd:"",
+            markd:props.markd,
             seat:0,
             isMarkdContentChange:false,
         }; 
@@ -589,9 +589,9 @@ class TkFrame extends Component{
     }
 	render(){
         let tool,saveTool,optionTool,topic_image,content;
-        if(!this.state.content || this.state.content.length===0){
-            return null;
-        }
+       // if(!this.state.content || this.state.content.length===0){
+       //     return null;
+       // }
         if(this.props.type==0){
             topic_image = <p style={{textAlign:'center'}}>
                 <img frameBorder={0}

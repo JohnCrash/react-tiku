@@ -51,7 +51,6 @@ class TkBrowser extends Component{
         return <div><div style={{textAlign:"center"}}>{pageButton}</div>
             <div>
             {this.props.topics.map((item)=>{
-                console.log(item.state);
                 return <TkFrame title='' messageBar={this.props.messageBar}
                     browser = {true}
                     index={i++}

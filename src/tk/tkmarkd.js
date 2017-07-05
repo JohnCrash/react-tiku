@@ -94,18 +94,16 @@ class TkMarkd extends Component{
         super(props);
         let content = props.content?props.content:"";
         this.state={
-            content:props.preview?editormd_preview(content,props.height):editormd(content,props.height)
+            content:props.preview?editormd_preview(content):editormd(content,props.height)
         };
     }
-    componentWillMount(){
-        let content = this.props.content?this.props.content:"";
-        this.setState({content:this.props.preview?editormd_preview(content):editormd(content,this.props.height)});      
+    componentWillMount(){  
     }
     componentWillReceiveProps(nextProps){
-        if(this.props.qid!==nextProps.qid){
+       if(this.props.qid!==nextProps.qid){
             let content = nextProps.content?nextProps.content:"";
             this.setState({content:nextProps.preview?editormd_preview(content):editormd(content,nextProps.height)});
-        }
+       }
     }    
     handleLoad(){
         if(this.iframe && this.iframe.contentDocument){
