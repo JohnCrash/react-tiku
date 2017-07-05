@@ -243,12 +243,19 @@ class TkEditor extends Component{
 		}
 	}
 	handleEdit(i){
+		//记住滚动位置
+		this.sx = window.scrollX;
+		this.sy = window.scrollY;
 		this.setState({mode:'edit',editIndex:i});
 	}
 	handleReturnBrowser(){
 		this.edit.save();
 		this.setState({mode:'browser'});
 		this.forceUpdate();
+		var id = setInterval(()=>{
+			clearInterval(id);
+			window.scrollTo(this.sx,this.sy);
+		},100);
 	}
 	handleAddTopic(){
 		console.log('add topic...');

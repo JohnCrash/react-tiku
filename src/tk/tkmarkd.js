@@ -94,27 +94,50 @@ class TkMarkd extends Component{
         super(props);
         let content = props.content?props.content:"";
         this.state={
+            iframeHeight:0,
             content:props.preview?editormd_preview(content):editormd(content,props.height)
         };
     }
     componentWillMount(){  
     }
     componentWillReceiveProps(nextProps){
-       if(this.props.qid!==nextProps.qid){
+       if(this.props.qid!==nextProps.qid || nextProps.preview){
             let content = nextProps.content?nextProps.content:"";
             this.setState({content:nextProps.preview?editormd_preview(content):editormd(content,nextProps.height)});
        }
     }    
-    handleLoad(){
-        if(this.iframe && this.iframe.contentDocument){
-            this.markd = this.iframe.contentDocument.markd;
-            if(this.markd && 'on' in this.markd)
-                this.markd.on('change',this.props.onkeyup);
-            this.iframe.contentDocument.body.onresize=this.handleSizeChange.bind(this);
+    recalcIFrameSize(){
+        let height = 0;
+        for(let i = 0;i<this.body.children.length;i++){
+            height += this.body.children[i].scrollHeight;
         }
-        if(this.props.onLoad){
-            this.props.onLoad();
-        }       
+        this.setState({iframeHeight:height});        
+    }      
+    handleLoad(){
+        if(!this.props.preview){
+            if(this.iframe && this.iframe.contentDocument){
+                this.markd = this.iframe.contentDocument.markd;
+                if(this.markd && 'on' in this.markd)
+                    this.markd.on('change',this.props.onkeyup);
+                this.iframe.contentDocument.body.onresize=this.handleSizeChange.bind(this);
+            }
+            if(this.props.onLoad){
+                this.props.onLoad();
+            }
+        }else{
+            if(this.iframe && this.iframe.contentDocument){
+                var document = this.iframe.contentDocument;
+                var body = document.body;     
+                this.content = body.outerHTML;
+                this.document = document;
+                this.body = body;           
+                var id = setInterval((()=>{
+                    clearInterval(id);
+                    this.recalcIFrameSize();
+                }).bind(this),510);
+                this.recalcIFrameSize();                
+            }
+        }   
     }
     //读取当前编辑的markdown
     getMarkdown(){
@@ -154,7 +177,7 @@ class TkMarkd extends Component{
           onLoad={this.handleLoad.bind(this)}
           ref = {(iframe)=>{this.iframe = iframe}}
           style={{width:'100%',border:0}}
-          height={this.props.height}
+          height={this.props.preview?this.state.iframeHeight:this.props.height}
           scrolling={'no'}
           srcDoc={this.state.content}>
         </iframe>

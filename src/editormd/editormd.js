@@ -4652,7 +4652,13 @@
 		var hook = function(){
 			//关闭公式的右键菜单，不显示消息处理提示
 			MathJax.Hub.Config({
-				showProcessingMessages: false,
+				showProcessingMessages:false,
+				messageStyle: "none",
+				processSectionDelay:0,
+				
+				updateTime: 30,
+				pdateDelay: 6,
+				
 				"HTML-CSS":{
 					showMathMenu:false
 				}					
