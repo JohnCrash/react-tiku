@@ -9,6 +9,7 @@ import TkArrowRight from 'material-ui/svg-icons/navigation/chevron-right';
 import TkLinkPhone from 'material-ui/svg-icons/notification/tap-and-play';
 import TkAdd from 'material-ui/svg-icons/content/add';
 import TkReturn from 'material-ui/svg-icons/content/reply';
+import TkDelete from 'material-ui/svg-icons/action/delete';
 
 import TkLinkPhoneDialog from './tklinkphone';
 
@@ -38,6 +39,9 @@ class TkToolBar extends Component{
   returnBrowser(){
     this.props.onReturnBrowser();
   }
+  deleteIgnore(){
+    this.props.onRemoveIgnore();
+  }
 	render(){
 		return (
 			<Toolbar style={{backgroundColor:'#00BCD4'}}>
@@ -48,11 +52,15 @@ class TkToolBar extends Component{
           <ToolbarTitle text={'题库编辑器'} style={{color:'#FFFFFF'}}/>
         </ToolbarGroup>		        
         <ToolbarGroup>
+          {!this.props.openReturnBrowser&&this.props.section?
+          <IconButton tooltip='删除章节下所有忽略的题' onClick={this.deleteIgnore.bind(this)}>
+            <TkDelete  color='#FFFFFF'/>
+          </IconButton>:undefined}          
           {!this.props.openReturnBrowser?
           <IconButton tooltip='使用手机录入' onClick={this.openLinkDialog.bind(this)}>
             <TkLinkPhone  color='#FFFFFF'/>
           </IconButton>:undefined}
-          {!this.props.openReturnBrowser?
+          {!this.props.openReturnBrowser&&this.props.section?
           <IconButton tooltip='在当前章节加入新题' onClick={this.addTopic.bind(this)}>
             <TkAdd  color='#FFFFFF'/>
           </IconButton>:undefined}

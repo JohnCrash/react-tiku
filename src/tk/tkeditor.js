@@ -8,6 +8,8 @@ import TkEdit from './tkedit';
 import Snackbar from 'material-ui/Snackbar';
 import 'whatwg-fetch'
 import htmldom from './htmldom';
+import Dialog from 'material-ui/Dialog';
+import FlatButton from 'material-ui/FlatButton';
 
 const warningColor = "#D50000";
 const greenColor = "#1B5E20";
@@ -38,6 +40,7 @@ class TkEditor extends Component{
 			count:0,
 			secation:0,
 			editIndex:-1,			
+			openDialog:false
 		}
 	}
 	//弹出一个错误条
@@ -287,7 +290,6 @@ class TkEditor extends Component{
 			editIndex:this.state.topics.length-1});
 	}
 	handleAddTopic(){
-		console.log('add topic...');
 		let url = encodeURI(`/add?SectionID=${this.currentPage.sectionID}`);
         fetch(url).then(function(response){
             return response.text()
@@ -307,17 +309,45 @@ class TkEditor extends Component{
 				this.messageBar(e.toString());
         }.bind(this));
 	}
+	handleRemoveIgnore(){
+		this.setState({openDialog:true});
+	}
+	handleRemoveIgnoreOk(){
+		this.setState({openDialog:false});
+		let url = encodeURI(`/clear?SectionID=${this.currentPage.sectionID}`);
+        fetch(url).then(function(response){
+            return response.text()
+        }).then(function(data){
+		  this.error = data;
+		  if(data==='ok'){
+			this.messageBar('成功清理',1);
+          	this.handlePage(1); //重新载入第一页，
+		  }else
+		    throw '没有正确删除忽略项!';
+        }.bind(this)).catch(function(e){
+            //加载数目失败
+			if(this.error)
+          		this.messageBar(this.error);
+			else
+				this.messageBar(e.toString());
+        }.bind(this));		
+	}
+	handleRemoveIgnoreCancel(){
+		this.setState({openDialog:false});
+	}
 	render(){
 		return (
 			<div>
 				<TkToolBar
+				section={this.state.section}
 				onPrevTopic={this.handlePrevTopic.bind(this)}
 				onNextTopic={this.handleNextTopic.bind(this)}
 				topicsNumber={this.state.topicsNumber}
 				onToolMenu={this.handleToolMenu.bind(this)}
 				onAddTopic={this.handleAddTopic.bind(this)}
 				openReturnBrowser={this.state.mode!=="browser"}
-				onReturnBrowser={this.handleReturnBrowser.bind(this)}/>
+				onReturnBrowser={this.handleReturnBrowser.bind(this)}
+				onRemoveIgnore={this.handleRemoveIgnore.bind(this)}/>
 				<TkNavDrawer ref={(drawer)=>{this.drawer = drawer}} 
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
@@ -342,6 +372,13 @@ class TkEditor extends Component{
 				bodyStyle={{backgroundColor:this.state.messageColor}}
                 message={this.state.errorMsg} 
                 autoHideDuration={5000} />
+				<Dialog open={this.state.openDialog}
+				 	title={'提示'}
+            		actions={[<FlatButton label='取消' primary={true} onTouchTap={this.handleRemoveIgnoreCancel.bind(this)}/>,
+                	<FlatButton label='确定' primary={true} onTouchTap={this.handleRemoveIgnoreOk.bind(this)}/>]}
+					onRequestClose={this.handleRemoveIgnoreCancel.bind(this)}>
+					你确定要删除该章节下全部被标注为‘忽略’的题吗？
+				</Dialog>
 			</div>
 		);
 	}
