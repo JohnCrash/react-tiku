@@ -197,7 +197,13 @@ class TkEditor extends Component{
 	}
 	//切换页
 	handlePage(i){		
-		let url = encodeURI(`/SectionPage10?SectionID=${this.currentPage.sectionID}&SectionPage=${i}&PageCount=${this.currentPage.pageCount}`);
+		let url;
+		if(this.addEditMode){
+			//重新查询页数
+			url = encodeURI(`/SectionPage10?SectionID=${this.currentPage.sectionID}&SectionPage=${i}`);
+		}else{
+			url = encodeURI(`/SectionPage10?SectionID=${this.currentPage.sectionID}&SectionPage=${i}&PageCount=${this.currentPage.pageCount}`);
+		}
         fetch(url).then(function(response){
             return response.text()
         }).then(function(data){
@@ -251,14 +257,55 @@ class TkEditor extends Component{
 	handleReturnBrowser(){
 		this.edit.save();
 		this.setState({mode:'browser'});
-		this.forceUpdate();
-		var id = setInterval(()=>{
-			clearInterval(id);
-			window.scrollTo(this.sx,this.sy);
-		},100);
+		if(this.addEditMode){
+			this.handlePage(1); //重新载入第一页，
+			this.addEditMode = undefined;
+		}else{
+			this.forceUpdate();
+			var id = setInterval(()=>{
+				clearInterval(id);
+				window.scrollTo(this.sx,this.sy);
+			},100);
+		}
+	}
+	handleAdd(rowid){
+		this.addEditMode = 1;
+		this.state.topics.push({
+			state:0,
+			seat_body:2,
+			markd_body:'',
+			seat_answer:2,
+			markd_answer:'',
+			seat_analysis:2,
+			markd_analysis:'',
+			seat_tag:2,
+			markd_tag:'',
+			rowid:rowid,
+		});
+		this.setState({
+			mode:'edit',
+			editIndex:this.state.topics.length-1});
 	}
 	handleAddTopic(){
 		console.log('add topic...');
+		let url = encodeURI(`/add?SectionID=${this.currentPage.sectionID}`);
+        fetch(url).then(function(response){
+            return response.text()
+        }).then(function(data){
+		  this.error = data;
+          let json = JSON.parse(data);
+          if(json&&json.originalError&&json.originalError.info){
+              this.error = 'ERROR:'+json.originalError.info.message;
+              throw this.error;
+          }
+          this.handleAdd(json.rowid);
+        }.bind(this)).catch(function(e){
+            //加载数目失败
+			if(this.error)
+          		this.messageBar(this.error);
+			else
+				this.messageBar(e.toString());
+        }.bind(this));
 	}
 	render(){
 		return (

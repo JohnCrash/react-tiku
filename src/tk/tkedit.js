@@ -71,10 +71,11 @@ class TkEdit extends Component{
     }
     render(){
         let topic = this.props.topics[this.props.current];
-        return <div>
-                {topic?[<TkFrame title='原题' 
+        let titleFrame = (topic&&topic.topic_image)?<TkFrame title='原题' 
                 visible={true}
-                content={topic.topic_image} source={topic.topic_image} tid={topic.rowid} type={0}/>,
+                content={topic.topic_image} source={topic.topic_image} tid={topic.rowid} type={0}/>:undefined;
+        return <div>
+                {topic?[titleFrame,
 				<TkFrame title='题目' messageBar={this.props.messageBar}
 					seat = {topic.seat_body}
 					source = {toHtmlDocument(topic.topic_body)}

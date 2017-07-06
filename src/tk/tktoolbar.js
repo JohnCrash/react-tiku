@@ -48,13 +48,14 @@ class TkToolBar extends Component{
           <ToolbarTitle text={'题库编辑器'} style={{color:'#FFFFFF'}}/>
         </ToolbarGroup>		        
         <ToolbarGroup>
+          {!this.props.openReturnBrowser?
           <IconButton tooltip='使用手机录入' onClick={this.openLinkDialog.bind(this)}>
             <TkLinkPhone  color='#FFFFFF'/>
-          </IconButton>
-          
+          </IconButton>:undefined}
+          {!this.props.openReturnBrowser?
           <IconButton tooltip='在当前章节加入新题' onClick={this.addTopic.bind(this)}>
             <TkAdd  color='#FFFFFF'/>
-          </IconButton>
+          </IconButton>:undefined}
           {this.props.openReturnBrowser?
           <IconButton tooltip='返回浏览模式' onClick={this.returnBrowser.bind(this)}>
             <TkReturn  color='#FFFFFF'/>
