@@ -6,10 +6,11 @@ import TkBrowser from './tkbrowser';
 import TkEdit from './tkedit';
 /* 在屏幕下方弹上一个消息 */
 import Snackbar from 'material-ui/Snackbar';
-import 'whatwg-fetch'
+import 'whatwg-fetch';
 import htmldom from './htmldom';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
+import TkLogin from './tklogin';
 
 const warningColor = "#D50000";
 const greenColor = "#1B5E20";
@@ -40,7 +41,8 @@ class TkEditor extends Component{
 			count:0,
 			secation:0,
 			editIndex:-1,			
-			openDialog:false
+			openDialog:false,
+			userName:'',
 		}
 	}
 	//弹出一个错误条
@@ -256,6 +258,7 @@ class TkEditor extends Component{
 		this.sx = window.scrollX;
 		this.sy = window.scrollY;
 		this.setState({mode:'edit',editIndex:i});
+		this.edit.update();
 	}
 	handleReturnBrowser(){
 		this.edit.save();
@@ -264,6 +267,7 @@ class TkEditor extends Component{
 			this.handlePage(1); //重新载入第一页，
 			this.addEditMode = undefined;
 		}else{
+			this.browser.update(this.state.editIndex);
 			this.forceUpdate();
 			var id = setInterval(()=>{
 				clearInterval(id);
@@ -335,6 +339,13 @@ class TkEditor extends Component{
 	handleRemoveIgnoreCancel(){
 		this.setState({openDialog:false});
 	}
+	handleLogout(){
+		this.login.logout();
+	}
+	handleLogin(user){
+		this.messageBar(`用户"${user}"成功登录`,1);
+		this.setState({userName:user});
+	}
 	render(){
 		return (
 			<div>
@@ -347,7 +358,9 @@ class TkEditor extends Component{
 				onAddTopic={this.handleAddTopic.bind(this)}
 				openReturnBrowser={this.state.mode!=="browser"}
 				onReturnBrowser={this.handleReturnBrowser.bind(this)}
-				onRemoveIgnore={this.handleRemoveIgnore.bind(this)}/>
+				onRemoveIgnore={this.handleRemoveIgnore.bind(this)}
+				userName = {this.state.userName}
+				onLogout={this.handleLogout.bind(this)}/>
 				<TkNavDrawer ref={(drawer)=>{this.drawer = drawer}} 
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
@@ -358,7 +371,8 @@ class TkEditor extends Component{
 					section={this.state.section}
 					onPage={this.handlePage.bind(this)}
 					onEdit={this.handleEdit.bind(this)}
-					messageBar={this.messageBar.bind(this)}/>
+					messageBar={this.messageBar.bind(this)}
+					ref={(iframe)=>{this.browser = iframe;}}/>
 				</div>
 				<div style={{display:this.state.mode!=="browser"?undefined:'none'}}>
 					<TkEdit topics={this.state.topics}
@@ -379,6 +393,8 @@ class TkEditor extends Component{
 					onRequestClose={this.handleRemoveIgnoreCancel.bind(this)}>
 					你确定要删除该章节下全部被标注为‘忽略’的题吗？
 				</Dialog>
+				<TkLogin onLogin={this.handleLogin.bind(this)}
+				ref={(d)=>{this.login=d;}}></TkLogin>
 			</div>
 		);
 	}

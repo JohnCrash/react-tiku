@@ -132,7 +132,9 @@ class TkFrame extends Component{
     componentDidMount(){
     }
     componentWillReceiveProps(nextProps){
- //       if(this.props.qid!=nextProps.qid){
+        if(this.props.qid!=nextProps.qid||
+            this.props.content!=nextProps.content||
+            this.props.markd!=nextProps.markd){ 
             this.isIFrameLoad = false;
             this.isFirstLoad = true;
             //自动保存上一个
@@ -172,7 +174,7 @@ class TkFrame extends Component{
                 content:content,
                 seat:nextProps.seat,
                 markd:nextProps.markd});
-//        }
+        }
     }
     componentWillUnmount(){
     }
@@ -187,6 +189,7 @@ class TkFrame extends Component{
             }
         }else{
             height = this.markd.getHeight();
+            if(!height)height=0;
             this.markd.doFullScreen();
         }
         this.setState({iframeHeight:height<32?32:height});
@@ -378,10 +381,12 @@ class TkFrame extends Component{
     automaticOption(){
         let [result,answer] = optionAuto(this.state.content,this.props.answer);
         if(result){
+            this.isIFrameLoad = false;
             this.iframe.srcdoc = result;
             let a = answer ? `答案为${answer}`:'但未解析出正确答案';
             this.messageBar(`成功转化为选择题,${a}.`,1);
-            this.checkChange();
+            this.state.isContentChange = true;
+            this.setState({isContentChange:true});
         }else{
             this.messageBar('不能自动转换为选择题');
         }
@@ -525,6 +530,16 @@ class TkFrame extends Component{
             this.setState({isMarkdContentChange:true,
                 markd:this.props.markd});
         }
+    }
+    relayout(){
+        var id;
+        let cb = function(){
+            clearInterval(id);
+            if(this.body && this.body.onload)
+                this.body.onload();
+            this.recalcIFrameSize();
+        };
+        id = setInterval(cb.bind(this),200);
     }
     //使用keyup事件跟踪文档的变化
     handleKeyup(event){

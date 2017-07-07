@@ -10,6 +10,7 @@ import TkLinkPhone from 'material-ui/svg-icons/notification/tap-and-play';
 import TkAdd from 'material-ui/svg-icons/content/add';
 import TkReturn from 'material-ui/svg-icons/content/reply';
 import TkDelete from 'material-ui/svg-icons/action/delete';
+import TkLogout from 'material-ui/svg-icons/social/people-outline';
 
 import TkLinkPhoneDialog from './tklinkphone';
 
@@ -42,6 +43,9 @@ class TkToolBar extends Component{
   deleteIgnore(){
     this.props.onRemoveIgnore();
   }
+  logout(){
+    this.props.onLogout();
+  }
 	render(){
 		return (
 			<Toolbar style={{backgroundColor:'#00BCD4'}}>
@@ -52,6 +56,9 @@ class TkToolBar extends Component{
           <ToolbarTitle text={'题库编辑器'} style={{color:'#FFFFFF'}}/>
         </ToolbarGroup>		        
         <ToolbarGroup>
+          <IconButton tooltip={`登出:${this.props.userName}`} onClick={this.logout.bind(this)}>
+            <TkLogout  color='#FFFFFF'/>
+          </IconButton>          
           {!this.props.openReturnBrowser&&this.props.section?
           <IconButton tooltip='删除章节下所有忽略的题' onClick={this.deleteIgnore.bind(this)}>
             <TkDelete  color='#FFFFFF'/>

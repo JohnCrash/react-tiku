@@ -101,9 +101,10 @@ class TkMarkd extends Component{
     componentWillMount(){  
     }
     componentWillReceiveProps(nextProps){
-       if(this.props.qid!==nextProps.qid || nextProps.preview){
+       if(this.props.qid!==nextProps.qid || nextProps.preview || !this.markd){
             let content = nextProps.content?nextProps.content:"";
-            this.setState({content:nextProps.preview?editormd_preview(content):editormd(content,nextProps.height)});
+            let cc = nextProps.preview?editormd_preview(content):editormd(content,nextProps.height);
+            this.setState({content:cc});
        }
     }    
     recalcIFrameSize(){

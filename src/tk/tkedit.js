@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import TkFrame from './tkframe';
-import toHtmlDocument from './tkconv';
+import {toHtmlDocument,toHtmlDocumentPreview} from './tkconv';
 
 /**
  * 编辑节点
@@ -68,6 +68,12 @@ class TkEdit extends Component{
                     break;                
             }
         }
+    }
+    update(){
+        if(this.body)this.body.relayout();
+        if(this.answer)this.answer.relayout();
+        if(this.analysis)this.analysis.relayout();
+        if(this.tag)this.tag.relayout();        
     }
     render(){
         let topic = this.props.topics[this.props.current];

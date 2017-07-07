@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import TkFrame from './tkframe';
-import toHtmlDocument from './tkconv';
+import {toHtmlDocument,toHtmlDocumentPreview} from './tkconv';
 import RaisedButton from 'material-ui/RaisedButton';
 
 const style = {
@@ -38,6 +38,10 @@ class TkBrowser extends Component{
         this.setState({current:i});
         this.props.onPage(i);
     }
+    update(i){
+        if(this.frames&&this.frames[i])
+            this.frames[i].relayout();
+    }
     render(){
         let pageButton;
         let i = 0;
@@ -48,6 +52,7 @@ class TkBrowser extends Component{
                 pageButton.push(<RaisedButton label={i} secondary={i==this.state.current} style={style}  onTouchTap={this.handleIndex.bind(this,i)}/>);
             pageButton.push(<RaisedButton label={'>'} style={style}  onTouchTap={this.handleNext.bind(this)}/>);
         }
+        this.frames = [];
         return <div><div style={{textAlign:"center"}}>{pageButton}</div>
             <div>
             {this.props.topics.map((item)=>{
@@ -55,13 +60,14 @@ class TkBrowser extends Component{
                     browser = {true}
                     index={i++}
                     seat = {item.seat_body}
-                    source = {toHtmlDocument(item.topic_body)}
-                    content={toHtmlDocument(item.body)}
+                    source = {toHtmlDocumentPreview(item.topic_body)}
+                    content={toHtmlDocumentPreview(item.body)}
                     markd={item.markd_body}
                     answer={item.answer}
                     type={1}
                     qid={item.rowid}
                     topicsType={item.state}
+                    ref={(frame)=>{if(frame)this.frames.push(frame);}}
                     onEdit={this.props.onEdit} />;
                 })}
             </div>
