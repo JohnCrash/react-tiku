@@ -26,8 +26,7 @@ class TkLinkPhone extends Component{
             connectMac:'',
             openDefiniteDialog:false,
             openDefiniteMessage:'',
-            openDefiniteCB:null,
-            openRequestDialog:false
+            openDefiniteCB:null
         };
     }
     componentWillMount(){
@@ -52,13 +51,6 @@ class TkLinkPhone extends Component{
                 this.setState({
                     connectMac:''
                 }); 
-                break;
-            case 'req':
-                if(this.props.open){
-                    this.setState({
-                        openRequestDialog:true
-                    });
-                }
                 break;
         }
     }
@@ -166,18 +158,6 @@ class TkLinkPhone extends Component{
             }.bind(this)); 
         });
     }
-    handleRefuse(){
-        TkLink.send('refuse');
-        this.setState({
-            openRequestDialog:false
-        });        
-    }
-    openAccept(){
-        TkLink.send('accept');
-        this.setState({
-            openRequestDialog:false
-        });        
-    }
      render(){
          let listitems = this.state.devices.map((item)=>{
              return <ListItem primaryText={`${item.device_name} (${item.device_mac})`}
@@ -216,14 +196,7 @@ class TkLinkPhone extends Component{
                 <FlatButton label='确定' primary={true} onTouchTap={this.state.openDefiniteCB}/>]}
                 open={this.state.openDefiniteDialog}>
                 <p>{this.state.openDefiniteMessage}</p>
-            </Dialog>
-            <Dialog title={'消息'}
-                actions={[<FlatButton label='否' primary={true} onTouchTap={this.handleRefuse.bind(this)}/>,
-                <FlatButton label='是' primary={true} onTouchTap={this.openAccept.bind(this)}/>]}
-                open={this.state.openRequestDialog}>
-                <p>另一个用户正在请求使用设备'{this.state.connectMac}'</p>
-                <p>是否将设备借给该用户使用?</p>
-            </Dialog>                     
+            </Dialog>                 
          </Dialog>         
      }
 };
