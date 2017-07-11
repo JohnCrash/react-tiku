@@ -32,7 +32,6 @@ function toHtmlDocument(body){
          */
         function autoResize(){
             var opts = [];
-            console.log('autoResize');
             enumAllElement(document,function(node){
                 if(node.hasAttribute&&(node.hasAttribute('option-btn')||node.hasAttribute('option-correct'))){
                     opts.push(node);
@@ -113,7 +112,6 @@ function toHtmlDocumentPreview(body){
          */
         function autoResize(){
             var opts = [];
-            console.log('autoResize');
             enumAllElement(document,function(node){
                 if(node.hasAttribute&&(node.hasAttribute('option-btn')||node.hasAttribute('option-correct'))){
                     opts.push(node);

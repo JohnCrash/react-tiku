@@ -47,7 +47,8 @@ class TkLogin extends Component{
             console.log(data);
         }.bind(this)).catch(function(e){
             this.messageBar(e);
-        });
+            this.setState({open:true});
+        }.bind(this));
     }
     logout(){
         this.setState({open:true});

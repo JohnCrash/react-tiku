@@ -5,12 +5,14 @@ import TextField from 'material-ui/TextField';
 import FlatButton from 'material-ui/FlatButton';
 import IconButton from 'material-ui/IconButton';
 import ContentInbox from 'material-ui/svg-icons/communication/phonelink-ring';
+import ContentLock from 'material-ui/svg-icons/communication/phonelink-lock';
 import 'whatwg-fetch';
 const warningColor = "#D50000";
 const greenColor = "#1B5E20";
 import Snackbar from 'material-ui/Snackbar';
 import CloseIcon from 'material-ui/svg-icons/content/clear';
 const IconColor = '#616161';
+import TkLink from './tklink';
 
 class TkLinkPhone extends Component{
     constructor(props){
@@ -21,27 +23,56 @@ class TkLinkPhone extends Component{
             messageColor:warningColor,
             errorMsg:'',
             currentItem:-1,
+            connectMac:'',
             openDefiniteDialog:false,
             openDefiniteMessage:'',
             openDefiniteCB:null,
+            openRequestDialog:false
         };
     }
     componentWillMount(){
+        TkLink.addEventListener(this.onTkLinkMessage.bind(this));
     }
     componentDidMount(){
+        TkLink.removeEventListener(this.onTkLinkMessage.bind(this));
     }
     componentWillReceiveProps(nextProps){
         this.loadDeviceInfo();
     }
-    handleCommit(){     
-        fetch(`/import`).then(function(responese){
-			return responese.text();
-		}).then(function(data){
-			this.error = data;
-
-		}.bind(this)).catch(function(e){
-
-		}.bind(this)); 
+    onTkLinkMessage(msg,data){
+        switch(msg){
+            case 'accept':
+                this.messageBar('成功连接',1);
+                this.setState({
+                    connectMac:TkLink.mac
+                });            
+                break;
+            case 'refuse':
+            case 'close':
+                this.setState({
+                    connectMac:''
+                }); 
+                break;
+            case 'req':
+                if(this.props.open){
+                    this.setState({
+                        openRequestDialog:true
+                    });
+                }
+                break;
+        }
+    }
+    handleCommit(event){
+        for(let i=0;i<this.state.devices.length;i++){
+            if(this.state.devices[i].id === this.state.currentItem){
+                //连接
+                TkLink.connect(this.state.devices[i].device_mac);
+                break;
+            }
+        }
+    }
+    handleBreak(event){
+        TkLink.disconnect();
     }
     addPhone(){
         let name = this.deviceName.getValue();
@@ -135,6 +166,18 @@ class TkLinkPhone extends Component{
             }.bind(this)); 
         });
     }
+    handleRefuse(){
+        TkLink.send('refuse');
+        this.setState({
+            openRequestDialog:false
+        });        
+    }
+    openAccept(){
+        TkLink.send('accept');
+        this.setState({
+            openRequestDialog:false
+        });        
+    }
      render(){
          let listitems = this.state.devices.map((item)=>{
              return <ListItem primaryText={`${item.device_name} (${item.device_mac})`}
@@ -143,10 +186,11 @@ class TkLinkPhone extends Component{
                 primaryTogglesNestedList={true}
                 unitJson={item}
                 rightIconButton={<IconButton ><CloseIcon onTouchTap={this.handleRemove.bind(this,item.id,item.device_name)} color={IconColor}/></IconButton>}
-                leftIcon={<ContentInbox />} />;
+                leftIcon={item.device_mac!==this.state.connectMac?<ContentInbox />:<ContentLock />} />;
             });
          return <Dialog title={'使用设备录入'}
-            actions={[<FlatButton label='取消' primary={true} onTouchTap={this.props.closeme}/>,
+            actions={[<FlatButton label='关闭' primary={true} onTouchTap={this.props.closeme}/>,
+                <FlatButton label='断开' primary={true} onTouchTap={this.handleBreak.bind(this)}/>,
                 <FlatButton label='连接' primary={true} onTouchTap={this.handleCommit.bind(this)}/>]}
             onRequestClose={this.props.closeme}
             open={this.props.open}>
@@ -172,7 +216,14 @@ class TkLinkPhone extends Component{
                 <FlatButton label='确定' primary={true} onTouchTap={this.state.openDefiniteCB}/>]}
                 open={this.state.openDefiniteDialog}>
                 <p>{this.state.openDefiniteMessage}</p>
-            </Dialog>           
+            </Dialog>
+            <Dialog title={'消息'}
+                actions={[<FlatButton label='否' primary={true} onTouchTap={this.handleRefuse.bind(this)}/>,
+                <FlatButton label='是' primary={true} onTouchTap={this.openAccept.bind(this)}/>]}
+                open={this.state.openRequestDialog}>
+                <p>另一个用户正在请求使用设备'{this.state.connectMac}'</p>
+                <p>是否将设备借给该用户使用?</p>
+            </Dialog>                     
          </Dialog>         
      }
 };

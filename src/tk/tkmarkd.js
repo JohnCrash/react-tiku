@@ -112,6 +112,7 @@ class TkMarkd extends Component{
         for(let i = 0;i<this.body.children.length;i++){
             height += this.body.children[i].scrollHeight;
         }
+        console.log('markd.recalcIFrameSize '+height);
         this.setState({iframeHeight:height});        
     }      
     handleLoad(){

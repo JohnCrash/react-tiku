@@ -20,6 +20,7 @@ import IconBook from 'material-ui/svg-icons/file/folder';
 import IconUnit from 'material-ui/svg-icons/editor/format-align-justify';
 import 'whatwg-fetch';
 import TkAddBookDialog from './tkaddbook';
+import TkLink from './tklink';
 
 /**
  * 书目边栏
@@ -144,6 +145,7 @@ class TkNavDrawer extends Component{
                 if(this.props.onSelectUnit){
                         let request = encodeURI(`/SectionPage10?SectionID=${item.props.unitJson.SectionID}`);
                         this.fetchGetJson(request,(json)=>{
+                            TkLink.sendIndex(item.props.unitJson.SectionID);
                             this.props.onSelectUnit(json);
                         });
                 }

@@ -13,6 +13,7 @@ import TkDelete from 'material-ui/svg-icons/action/delete';
 import TkLogout from 'material-ui/svg-icons/social/people-outline';
 
 import TkLinkPhoneDialog from './tklinkphone';
+import TkLink from './tklink';
 
 /**
  * 主工具条
@@ -25,8 +26,30 @@ class TkToolBar extends Component{
   constructor(props){
     super(props);
     this.state = {
-      openLinkDialog:false
+      openLinkDialog:false,
+      connectMac:''
     };
+  }
+  componentWillMount(){
+      TkLink.addEventListener(this.onTkLinkMessage.bind(this));
+  }
+  componentDidMount(){
+      TkLink.removeEventListener(this.onTkLinkMessage.bind(this));
+  }  
+  onTkLinkMessage(msg,data){
+    switch(msg){
+        case 'accept':
+            this.setState({
+                connectMac:TkLink.mac
+            });            
+            break;
+        case 'refuse':
+        case 'close':
+            this.setState({
+                connectMac:''
+            }); 
+            break;
+    }
   }
   openLinkDialog(){
     this.setState({openLinkDialog:true});
@@ -65,14 +88,14 @@ class TkToolBar extends Component{
           </IconButton>:undefined}          
           {!this.props.openReturnBrowser?
           <IconButton tooltip='使用手机录入' onClick={this.openLinkDialog.bind(this)}>
-            <TkLinkPhone  color='#FFFFFF'/>
+            <TkLinkPhone  color={this.state.connectMac?'#FFCDD2':'#FFFFFF'} />
           </IconButton>:undefined}
           {!this.props.openReturnBrowser&&this.props.section?
           <IconButton tooltip='在当前章节加入新题' onClick={this.addTopic.bind(this)}>
             <TkAdd  color='#FFFFFF'/>
           </IconButton>:undefined}
           {this.props.openReturnBrowser?
-          <IconButton tooltip='返回浏览模式' onClick={this.returnBrowser.bind(this)}>
+          <IconButton tooltip='返回浏览模式并保存更改' onClick={this.returnBrowser.bind(this)}>
             <TkReturn  color='#FFFFFF'/>
           </IconButton>:undefined}
 

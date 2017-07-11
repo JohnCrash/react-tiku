@@ -11,6 +11,7 @@ import htmldom from './htmldom';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 import TkLogin from './tklogin';
+import TkLink from './tklink';
 
 const warningColor = "#D50000";
 const greenColor = "#1B5E20";
@@ -43,6 +44,7 @@ class TkEditor extends Component{
 			editIndex:-1,			
 			openDialog:false,
 			userName:'',
+			openRequestDialog:false
 		}
 	}
 	//弹出一个错误条
@@ -52,9 +54,23 @@ class TkEditor extends Component{
 		}).bind(this),5000);
 		this.setState({errorOpen:true,errorMsg:str,messageColor:f?greenColor:warningColor});
 	}
+    componentWillMount(){
+        TkLink.addEventListener(this.onTkLinkMessage.bind(this));
+    }	
     componentDidMount(){
-
+		TkLink.removeEventListener(this.onTkLinkMessage.bind(this));
     }
+	onTkLinkMessage(msg,data){
+        switch(msg){
+            case 'req':
+                if(!this.state.openRequestDialog){
+                    this.setState({
+                        openRequestDialog:true
+                    });
+                }
+                break;
+        }
+	}
 	handleToolMenu(){
 		//打开边栏
 		this.drawer.toggle();
@@ -212,6 +228,7 @@ class TkEditor extends Component{
         fetch(url).then(function(response){
             return response.text()
         }).then(function(data){
+			TkLink.sendIndex(this.currentPage.sectionID);
 		  this.error = data;
           let json = JSON.parse(data);
           if(json&&json.originalError&&json.originalError.info){
@@ -346,6 +363,18 @@ class TkEditor extends Component{
 		this.messageBar(`用户"${user}"成功登录`,1);
 		this.setState({userName:user});
 	}
+    handleRefuse(){
+        TkLink.send('refuse');
+        this.setState({
+            openRequestDialog:false
+        });        
+    }
+    openAccept(){
+        TkLink.send('accept');
+        this.setState({
+            openRequestDialog:false
+        });        
+    }	
 	render(){
 		return (
 			<div>
@@ -395,6 +424,14 @@ class TkEditor extends Component{
 				</Dialog>
 				<TkLogin onLogin={this.handleLogin.bind(this)}
 				ref={(d)=>{this.login=d;}}></TkLogin>
+				<Dialog title={'消息'}
+					ref={(d)=>{this.msgDialog = d;}}
+					actions={[<FlatButton label='否' primary={true} onTouchTap={this.handleRefuse.bind(this)}/>,
+					<FlatButton label='是' primary={true} onTouchTap={this.openAccept.bind(this)}/>]}
+					open={this.state.openRequestDialog}>
+					<p>另一个用户正在请求使用设备'{TkLink.mac}'</p>
+					<p>是否将设备借给该用户使用?</p>
+				</Dialog>  				
 			</div>
 		);
 	}

@@ -647,19 +647,20 @@ class TkFrame extends Component{
                 saveTool = [
                     <IconButton tooltip='重新编辑' onClick={this.handleReset.bind(this)}>
                         <TkReset color={toolbarIconColor}/>
-                    </IconButton>,
+                    </IconButton>/*,
                     <IconButton tooltip='装入上次编辑内容' onClick={this.handleLoadPrev.bind(this)}>
                         <TkDownload color={toolbarIconColor}/>
                     </IconButton>,                    
                     <IconButton tooltip='存储入库' onClick={this.handleUpload.bind(this)}>
                         <TkUpload  color={c}/>
-                </IconButton>];
+                </IconButton>*/];
+                /*
                 if(this.props.type==1){
                     saveTool.push( 
                         <IconButton tooltip='交互测试' onClick={this.handleTest.bind(this)}>
                             <TkTest  color={toolbarIconColor}/>
                         </IconButton>);
-                }
+                }*/
                 saveTool.push(
                     <IconButton tooltip='切换Markdown' onClick={this.handleMarkdown.bind(this)}>
                         <TkMarkdown  color={toolbarIconColor}/>
