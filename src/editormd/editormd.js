@@ -4441,6 +4441,7 @@
         if (settings.mathjax)
         {
             var mathjaxHandle = function() {
+				var count = 0;
                 div.find("." + editormd.classNames.tex).each(function(){
 					var tex  = $(this);
 					if(tex[0].hasAttribute("asciimath")){
@@ -4456,10 +4457,16 @@
 							tex[0].innerHTML = "$$"+tex[0].innerHTML+"$$";
 						}
 					}
+					count++;
 					editormd.$mathjax.Hub.Typeset(tex[0]);
-					//editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]]);
+					//editormd.$mathjax.Hub.queue.Push(["Typeset",editormd.$mathjax.Hub,tex[0]],()=>{
+					//	editormd.onchange();
+					//});
                     //tex.find(".katex").css("font-size", "1.6em");
                 });
+				if(count>0){
+					setInterval(()=>{editormd.onchange();},300);
+				}
             };
             
             if (settings.autoLoadMathJax && !editormd.$mathjax && !editormd.mathjaxLoaded)
