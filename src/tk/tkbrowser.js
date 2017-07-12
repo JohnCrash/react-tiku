@@ -29,7 +29,7 @@ class TkBrowser extends Component{
     onTkLinkMessage(msg,data){
         switch(msg){
             case 'news':
-                this.props.onPage(1);
+                this.props.onPage(1,true);
                 break;
         }
     }     

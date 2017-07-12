@@ -134,7 +134,8 @@ class TkFrame extends Component{
     componentWillReceiveProps(nextProps){
         if(this.props.qid!=nextProps.qid||
             this.props.content!=nextProps.content||
-            this.props.markd!=nextProps.markd){ 
+            this.props.markd!=nextProps.markd||
+            this.props.topicsType!=nextProps.topicsType){ 
             this.isIFrameLoad = false;
             this.isFirstLoad = true;
             //自动保存上一个

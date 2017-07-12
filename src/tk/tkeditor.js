@@ -217,9 +217,9 @@ class TkEditor extends Component{
 		}
 	}
 	//切换页
-	handlePage(i){		
+	handlePage(i,b){		
 		let url;
-		if(this.addEditMode){
+		if(this.addEditMode || b){
 			//重新查询页数
 			url = encodeURI(`/SectionPage10?SectionID=${this.currentPage.sectionID}&SectionPage=${i}`);
 		}else{
