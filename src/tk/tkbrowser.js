@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import TkFrame from './tkframe';
 import {toHtmlDocument,toHtmlDocumentPreview} from './tkconv';
 import RaisedButton from 'material-ui/RaisedButton';
+import TkLink from './tklink';
 
 const style = {
     marginLeft:0,
@@ -19,6 +20,19 @@ class TkBrowser extends Component{
             current:props.current
         };
     }
+    componentWillMount(){
+        TkLink.addEventListener(this.onTkLinkMessage.bind(this));
+    }
+    componentDidMount(){
+        TkLink.removeEventListener(this.onTkLinkMessage.bind(this));
+    }   
+    onTkLinkMessage(msg,data){
+        switch(msg){
+            case 'news':
+                this.props.onPage(1);
+                break;
+        }
+    }     
     bound(i){
         if(i<1)return 1;
         if(i>this.props.count)return this.props.count;
