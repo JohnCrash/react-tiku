@@ -3827,7 +3827,7 @@
 							 if(i%2==0){
 								 result += seg[i].replace(/\[\[(.*?)\]([1-9]?[1-9]?)\]/g,function($1,$2,$3){
 									var s = $3;
-									return `<textarea type="text" size="${s}" cols="80" rows="${s}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);">${$2}</textarea>`;
+									return `<textarea type="text" style="display:inline" size="${s}" cols="80" rows="${s}" onchange="answer_onchange(this);" onkeyup="answer_onchange(this);">${$2}</textarea>`;
 								});
 							 }else{
 								 result += (ss+seg[i]+ss);
