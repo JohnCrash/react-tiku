@@ -1,0 +1,133 @@
+html, button, input, select, textarea {
+    font-family: arial,tahoma,'Microsoft Yahei','\5b8b\4f53',sans-serif;
+}
+html,body{
+    height:100%;
+    overflow:hidden;
+}
+
+.container{
+    position:absolute;
+    top:0;right:360px;bottom:0;left:0;
+    overflow:hidden;
+    overflow-y:auto;
+}
+.t-bigpic{
+    background:#fff;
+    padding:20px;
+    margin:10px 50px;
+}
+
+.t-bigpic img{
+    display:block;
+    margin:0 auto;
+    max-width:100%;
+}
+.t-jiexi{
+    margin:10px 50px;
+    padding:20px;
+    background:#fff;
+    border:1px solid #eee;
+}
+@media screen and (max-width: 480px){
+   .t-bigpic{
+        margin:10px 20px;
+    }
+    .t-jiexi{
+        margin:10px 20px;
+    }
+}
+
+@font-face {
+    font-family: zuoyeFont_mathFont;
+    src: url(fonts/mathFont_45cb6c2.eot?#iefix);
+    src: url(fonts/mathFont_45cb6c2.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathFont_84f42a9.woff2) format('woff2'),
+    url(fonts/mathFont_b78f80a.woff) format('woff'),
+    url(fonts/mathFont_f30c886.ttf) format('truetype'),
+    url(fonts/mathFont_7554296.otf) format('opentype'),
+    url(https://ws-s.zuoyebang.cc/static/question/base/resource/mathFont_606a261.svg) format('svg');
+    font-weight: 400;
+    font-style: normal
+}
+.math-font {
+    font-family: zuoyeFont_mathFont;
+    font-weight: 400;
+    font-style: normal;
+}
+.card{
+    font-size: 14px;
+    color: #666;
+    line-height: 32px;
+}
+.card.refer{
+    margin: 0 auto 4px;
+    border-radius: 3px;
+}
+.card>dd {
+    border-bottom: 1px dashed #e7e7e7;
+    padding: 1px 0;
+    position: relative;
+}
+.card>dd .trace.refer-ques {
+    padding-bottom: 10px;
+}
+.card>dd .trace.refer-ques dt {
+    color: #45B7FF;
+}
+.card>dd .trace.refer-answer {
+    padding: 10px 0;
+}
+.card>dd .trace.refer-answer dt {
+    color: #0FDB84;
+}
+
+.btn-bar{
+    position: absolute;
+    top:0;bottom:0;right:0;
+    width:360px;
+    background:#fff;
+    border-top:1px solid #ccc;
+    z-index:10;
+    box-shadow: 0 -2px 5px rgba(0,0,0,.1);
+    overflow:hidden;
+    overflow-y:hidden;
+}
+.btn-inner{
+    margin:10px;
+    padding-top:10px;
+}
+@media screen and (max-width: 480px){
+
+   .btn-inner{
+        margin:0 20px;
+    }
+}
+.btn-one{
+    padding:6px 0;
+    border-bottom:1px dashed #ccc;
+}
+input[disabled='disabled']{
+    color:gray;
+}
+
+.btn-sel li{
+    font-size:14px;
+}
+.btn-tip{
+    display:inline-block;
+    width:80px;
+    line-height:30px;
+}
+.btn-select{
+    font-size:14px;
+    line-height:20px;
+}
+.btn-sure input{
+    display:inline-block;
+    margin-right:15px;
+}
+.btn-btn{
+    font-size:14px;
+    padding:2px 10px;
+}

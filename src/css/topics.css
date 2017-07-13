@@ -1,0 +1,128 @@
+/* 选择题样式 */
+[option-btn]{     
+	display: inline-block;     
+	margin-top: 10px;     
+	padding: 10px 24px;     
+	border-radius: 4px;     
+	background-color: #1976D2;     
+	color: #fff;     
+	cursor: pointer;
+}     
+
+[option-btn]:hover{     
+	background-color: #64B5F6;     
+}
+
+[option-correct]{     
+	display: inline-block;     
+	margin-top: 10px;     
+	padding: 10px 24px;     
+	border-radius: 4px;     
+	background-color: #FF5252;     
+	color: #fff;     
+	cursor: pointer;     
+}     
+
+[option-correct]:hover{     
+	background-color: #FF8A80;     
+}
+
+/* 填空题样式 */
+[answer-feild] {
+	text-align: center;
+	color: #FF0000;	
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 2px;
+	border-left-width: 1px;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: solid;
+	border-left-style: none;
+	border-top-color: #000000;
+	border-right-color: #000000;
+	border-bottom-color: #1976D2;
+	border-left-color: #000000;
+}
+
+[answer-feild2] {
+	color: #FF0000;	
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 2px;
+	border-left-width: 1px;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: solid;
+	border-left-style: none;
+	border-top-color: #000000;
+	border-right-color: #000000;
+	border-bottom-color: #1976D2;
+	border-left-color: #000000;
+}
+
+/* 连接题样式 */
+[lnkGroupA]{     
+	display: inline-block;     
+	margin-top: 10px;     
+	padding: 10px 24px;     
+	border-radius: 4px;     
+	background-color: #FF5252;     
+	color: #fff;     
+	cursor: pointer;
+}     
+
+[lnkGroupA]:hover{     
+	background-color: #FF8A80;     
+}
+
+[lnkGroupA]{     
+	display: inline-block;     
+	margin-top: 10px;     
+	padding: 10px 24px;     
+	border-radius: 4px;     
+	background-color: #1976D2;     
+	color: #fff;     
+	cursor: pointer;     
+}     
+
+[lnkGroupA]:hover{     
+	background-color: #2196F3;     
+}
+
+[lnkGroupB]{     
+	display: inline-block;     
+	margin-top: 10px;     
+	padding: 10px 24px;     
+	border-radius: 4px;     
+	background-color: #2E7D32;     
+	color: #fff;     
+	cursor: pointer;     
+}     
+
+[lnkGroupB]:hover{     
+	background-color: #43A047;     
+}
+
+.markdown-body table.linktopic{
+	display:inherit;
+	width:auto;
+	margin-bottom: 0px;
+}
+
+.markdown-body table.linktopic td{
+	border:0px;
+}
+
+.markdown-body table.linktopic tr{
+	border:0px;
+	background-color: inherit;
+}
+
+.markdown-body tr.A{
+	vertical-align:bottom;
+}
+
+.markdown-body tr.B{
+	vertical-align:top;
+}

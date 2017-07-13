@@ -3937,7 +3937,7 @@
 						A.sort(sortFunc);
 						B.sort(sortFunc);
 						let create3Table=function(A,C,B){ //仅仅将A组连线部分和B组组合为一个表格
-							return `<table class="link" border="0">`+(!vertical?
+							return `<table class="linktopic" border="0">`+(!vertical?
 								`<tr><td align="center" style="padding: 0px 0px;">${A}</td></tr>
 								<tr><td align="center" style="padding: 0px 0px;">${C}</td></tr>
 								<tr><td align="center" style="padding: 0px 0px;">${B}</td></tr>`:
@@ -3947,7 +3947,7 @@
 						};
 						//准备输出连线题节点
 						let createTable=function(t,ctr){ //用于产生连线项表格
-							let txt = "<table class=\"link\" border=\"0\">";
+							let txt = "<table class=\"linkgroup\" border=\"0\">";
 							let [trcstr,tdalgin] = ctr==="A"?[" class=\"A\""," align=\"right\""]:[" class=\"B\""," align=\"left\""];
 							if(!vertical){
 								txt += `<tr${trcstr}>`;
@@ -4469,7 +4469,7 @@
                     //tex.find(".katex").css("font-size", "1.6em");
                 });
 				if(count>0){
-					setInterval(()=>{editormd.onchange();},300);
+					setTimeout(()=>{editormd.onchange();},300);
 				}
             };
             
@@ -4710,65 +4710,69 @@
 		$("."+editormd.classPrefix+"preview-container:last"),
 		$("#test-editormd-view2")];
 		for(let i=0;i<a.length;i++){
-			var agroup = a[i].find("[lnkgroupa]");
-			var bgroup = a[i].find("[lnkgroupb]");
-			var svg = a[i].find("#svglnks");
-			if(agroup.length>0 && bgroup.length>0 && svg.length==1){
-				var svghtml = "";
-				agroup.each(function(){ //这里为什么不能用agroup.each(()=>{});
-					let _this = $(this);
-					let id = _this.attr("lnkid");
-					let to = _this.attr("lnkto");
-					if(to){
-						let _to; //这里为什么不能用let _to = bgroup.find(`[linkid='${to}']`);
-						bgroup.each(function(){
-							if( $(this).attr("lnkid") === to ){
-								_to = $(this);
-								return false;
+			var topics = a[i].find(".linktopic");
+			for(let ti=0;ti<topics.length;ti++){
+				var topic = topics.eq(ti);
+				var agroup = topic.find("[lnkgroupa]");
+				var bgroup = topic.find("[lnkgroupb]");
+				var svg = topic.find("#svglnks");
+				if(agroup && bgroup && svg){
+					var svghtml = "";
+					agroup.each(function(){ //这里为什么不能用agroup.each(()=>{});
+						let _this = $(this);
+						let id = _this.attr("lnkid");
+						let to = _this.attr("lnkto");
+						if(to){
+							let _to; //这里为什么不能用let _to = bgroup.find(`[linkid='${to}']`);
+							bgroup.each(function(){
+								if( $(this).attr("lnkid") === to ){
+									_to = $(this);
+									return false;
+								}
+								return true;
+							});
+							if(_to && _to.length==1 && svg[0].clientHeight && _this[0].offsetParent && _to[0].offsetParent){
+								let x1,y1,x2,y2;
+								let parentTable = function(c){
+									//s->td->tr->tbody->table
+									return c.parentNode.parentNode.parentNode.parentNode;
+								};							
+								if(svg.attr("vertical")==="true"){
+									x1 = 0;
+									let offoy = parentTable(_this[0]).offsetTop;
+									y1 = offoy+_this[0].offsetParent.offsetTop+_this[0].offsetParent.offsetHeight/2;
+									x2 = svg[0].clientWidth;
+									offoy = parentTable(_to[0]).offsetTop;
+									y2 = offoy + _to[0].offsetParent.offsetTop+_to[0].offsetParent.offsetHeight/2;
+									x1+=3;x2-=3;
+								}else{
+									let offox = parentTable(_this[0]).offsetLeft;
+									x1 = offox + _this[0].offsetParent.offsetLeft+_this[0].offsetParent.offsetWidth/2;
+									y1 = 0;
+									offox = parentTable(_to[0]).offsetLeft;								
+									x2 = offox + _to[0].offsetParent.offsetLeft+_to[0].offsetParent.offsetWidth/2;
+									y2 = svg[0].clientHeight;
+									y1+=3;y2-=3;
+								}
+								/*//连线两头加点
+								svghtml += `<circle cx="${x1}" cy="${y1}" r="1.5" stroke="black" stroke-width="2" fill="black"/>
+								<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>
+								<circle cx="${x2}" cy="${y2}" r="1.5" stroke="black" stroke-width="2" fill="black"/>`;*/
+								svghtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>`;							
 							}
-							return true;
-						});
-						if(_to && _to.length==1 && svg[0].clientHeight && _this[0].offsetParent && _to[0].offsetParent){
-							let x1,y1,x2,y2;
-							let parentTable = function(c){
-								//s->td->tr->tbody->table
-								return c.parentNode.parentNode.parentNode.parentNode;
-							};							
-							if(svg.attr("vertical")==="true"){
-								x1 = 0;
-								let offoy = parentTable(_this[0]).offsetTop;
-								y1 = offoy+_this[0].offsetParent.offsetTop+_this[0].offsetParent.offsetHeight/2;
-								x2 = svg[0].clientWidth;
-								offoy = parentTable(_to[0]).offsetTop;
-								y2 = offoy + _to[0].offsetParent.offsetTop+_to[0].offsetParent.offsetHeight/2;
-								x1+=3;x2-=3;
-							}else{
-								let offox = parentTable(_this[0]).offsetLeft;
-								x1 = offox + _this[0].offsetParent.offsetLeft+_this[0].offsetParent.offsetWidth/2;
-								y1 = 0;
-								offox = parentTable(_to[0]).offsetLeft;								
-								x2 = offox + _to[0].offsetParent.offsetLeft+_to[0].offsetParent.offsetWidth/2;
-								y2 = svg[0].clientHeight;
-								y1+=3;y2-=3;
-							}
-							/*//连线两头加点
-							svghtml += `<circle cx="${x1}" cy="${y1}" r="1.5" stroke="black" stroke-width="2" fill="black"/>
-							<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>
-							<circle cx="${x2}" cy="${y2}" r="1.5" stroke="black" stroke-width="2" fill="black"/>`;*/
-							svghtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,0);stroke-width:2"/>`;							
 						}
+						return true;
+					});
+					if(svghtml){
+						if(svg.attr("vertical")==="true"){
+							let h = svg[0].parentNode.clientHeight; //这样做是因为svg height:100%不工作
+							svg.height(h).html(svghtml);
+						}else
+							svg.html(svghtml);	
 					}
-					return true;
-				});
-				if(svghtml){
-					if(svg.attr("vertical")==="true"){
-						let h = svg[0].parentNode.clientHeight; //这样做是因为svg height:100%不工作
-						svg.height(h).html(svghtml);
-					}else
-						svg.html(svghtml);	
 				}
 			}
-		}
+		}//for
 		
 	};
 	

@@ -1,0 +1,329 @@
+@font-face {
+    font-family: MathJax_Main;
+    src: url(fonts/mathMain_69e4e13.eot?#iefix);
+    src: url(fonts/mathMain_69e4e13.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathMain_54c07c0.woff2) format('woff2'),
+    url(fonts/mathMain_6962a4f.woff) format('woff'),
+    url(fonts/mathMain_752d0f2.ttf) format('truetype'),
+    url(fonts/mathMain_1391373.otf) format('opentype'),
+    url(fonts/mathMain_c7db9c2.svg) format('svg');
+    font-weight: 400;
+    font-style: normal
+}
+
+.fM {
+    font-family: MathJax_Main;
+    font-weight: 400;
+    font-style: normal
+}
+
+@font-face {
+    font-family: MathJax_Math;
+    src: url(fonts/mathItalic_2b773b3.eot?#iefix);
+    src: url(fonts/mathItalic_2b773b3.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathItalic_fe2a21e.woff2) format('woff2'),
+    url(fonts/mathItalic_6720343.woff) format('woff'),
+    url(fonts/mathItalic_cbe55fc.ttf) format('truetype'),
+    url(fonts/mathItalic_33d77b6.otf) format('opentype'),
+    url(fonts/mathItalic_32ccf34.svg) format('svg');
+    font-weight: 400;
+    font-style: italic
+}
+
+.fI {
+    font-family: MathJax_Math;
+    font-weight: 400;
+    font-style: italic
+}
+
+@font-face {
+    font-family: MathJax_AMS;
+    src: url(fonts/mathAMS_3f79e2c.eot?#iefix);
+    src: url(fonts/mathAMS_3f79e2c.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathAMS_febdc8e.woff2) format('woff2'),
+    url(fonts/mathAMS_a750404.woff) format('woff'),
+    url(fonts/mathAMS_c9db082.ttf) format('truetype'),
+    url(fonts/mathAMS_17eb77f.otf) format('opentype'),
+    url(fonts/mathAMS_912acf4.svg) format('svg');
+    font-weight: 400;
+    font-style: normal
+}
+
+.fAMS {
+    font-family: MathJax_AMS;
+    font-weight: 400;
+    font-style: normal
+}
+
+@font-face {
+    font-family: MathJax_Size1;
+    src: url(fonts/mathS1_c1763df.eot?#iefix);
+    src: url(fonts/mathS1_c1763df.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathS1_8c10dc8.woff2) format('woff2'),
+    url(fonts/mathS1_fb2b025.woff) format('woff'),
+    url(fonts/mathS1_d6a9636.ttf) format('truetype'),
+    url(fonts/mathS1_0e13fb2.otf) format('opentype'),
+    url(fonts/mathS1_0405182.svg) format('svg');
+    font-weight: 400;
+    font-style: normal
+}
+
+.fS1 {
+    font-family: MathJax_Size1;
+    font-weight: 400;
+    font-style: normal
+}
+
+@font-face {
+    font-family: MathJax_Size2;
+    src: url(fonts/mathS2_4d86bc6.eot?#iefix);
+    src: url(fonts/mathS2_4d86bc6.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathS2_cbba513.woff2) format('woff2'),
+    url(fonts/mathS2_0c7cfdd.woff) format('woff'),
+    url(fonts/mathS2_3faa164.ttf) format('truetype'),
+    url(fonts/mathS2_33e98ba.otf) format('opentype'),
+    url(fonts/mathS2_0989615.svg) format('svg');
+    font-weight: 400;
+    font-style: normal
+}
+
+.fS2 {
+    font-family: MathJax_Size2;
+    font-weight: 400;
+    font-style: normal
+}
+
+@font-face {
+    font-family: MathJax_Size3;
+    src: url(fonts/mathS3_57c3fd1.eot?#iefix);
+    src: url(fonts/mathS3_57c3fd1.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathS3_25fb9f7.woff2) format('woff2'),
+    url(fonts/mathS3_0d153bd.woff) format('woff'),
+    url(fonts/mathS3_7d70c42.ttf) format('truetype'),
+    url(fonts/mathS3_c02b8b6.otf) format('opentype'),
+    url(fonts/mathS3_65ac53f.svg) format('svg');
+    font-weight: 400;
+    font-style: normal
+}
+
+.fS3 {
+    font-family: MathJax_Size3;
+    font-weight: 400;
+    font-style: normal
+}
+
+@font-face {
+    font-family: MathJax_Size4;
+    src: url(fonts/mathS4_8813f2a.eot?#iefix);
+    src: url(fonts/mathS4_8813f2a.eot?#iefix) format('embedded-opentype'),
+    url(fonts/mathS4_d2a5547.woff2) format('woff2'),
+    url(fonts/mathS4_e5f1845.woff) format('woff'),
+    url(fonts/mathS4_87256da.ttf) format('truetype'),
+    url(fonts/mathS4_97657c0.otf) format('opentype'),
+    url(fonts/mathS4_9924f24.svg) format('svg');
+    font-weight: 400;
+    font-style: normal
+}
+
+.fS4 {
+    font-family: MathJax_Size4;
+    font-weight: 400;
+    font-style: normal
+}
+
+
+
+.t-jiexi .card>dt {
+    height: 38px;
+    margin: -20px -20px 0;
+    padding: 8px 20px 0;
+    font-size: 16px;
+    line-height: 38px;
+    color: #45B7FF
+}
+
+
+.t-jiexi .card>dd:first-child {
+    padding-top: 0
+}
+
+.t-jiexi .card>dd:last-child {
+    border: 0;
+    padding-bottom: 0
+}
+
+.t-jiexi .card>dd .trace {
+    *zoom:1}
+
+.t-jiexi .card>dd .trace:after {
+    content: '\0020';
+    display: block;
+    height: 0;
+    font-size: 0;
+    clear: both;
+    overflow: hidden;
+    visibility: hidden
+}
+
+.t-jiexi .card>dd .trace.refer-ques {
+    padding-bottom: 10px
+}
+
+.t-jiexi .card>dd .trace.refer-ques dt {
+    color: #45B7FF
+}
+
+.t-jiexi .card>dd .trace.refer-answer {
+    padding: 10px 0
+}
+
+.t-jiexi .card>dd .trace.refer-answer dt {
+    color: #0FDB84
+}
+
+.t-jiexi .card.question {
+    font-size: 18px;
+    color: #333;
+    border-top: 0
+}
+
+.t-jiexi .card.question>dd {
+    border: 0
+}
+
+.t-jiexi .card.question>dd img {
+    display: inline-block;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    max-width: 100%
+}
+
+
+.t-jiexi .card.refer>div {
+    height: 36px;
+    line-height: 40px;
+    width: 100.3%;
+    border-bottom: 1px solid #ebebeb;
+    margin-bottom: 10px;
+    font-size: 14px;
+    background: #f8f8f8;
+    margin-left: -10px;
+    padding-left: 10px;
+    padding-right: 9px;
+    border-radius: 3px 3px 0 0;
+    font-weight: 700
+}
+
+
+.error-txt {
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    font-size: 16px;
+    color: #333
+}
+
+.special-style {
+    word-wrap: break-word;
+    line-height: 2
+}
+.special-style .math {
+    display: inline;
+    text-align: left;
+    word-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    float: none;
+    direction: ltr;
+    margin: 0 .2em
+}
+
+.special-style .math nobr {
+    text-decoration: none
+}
+
+.special-style .math nobr>.pS {
+    padding: .2em 0
+}
+
+.special-style .math span {
+    display: inline;
+    position: static;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    vertical-align: 0;
+    line-height: normal;
+    text-decoration: none
+}
+
+.special-style img {
+    max-width: 100%;
+    vertical-align: middle
+}
+
+.special-style table {
+    border-spacing: 0
+}
+
+.special-style table.tB {
+    border-top: solid 1px #999;
+    border-left: solid 1px #999;
+    border-radius: 4px
+}
+
+.special-style table.tB>tbody>tr:first-child>td {
+    border-top: 0
+}
+
+.special-style table.tB>tbody>tr:first-child>td:first-child {
+    border-top-left-radius: 4px
+}
+
+.special-style table.tB>tbody>tr:first-child>td:last-child {
+    border-top-right-radius: 4px
+}
+
+.special-style table.tB>tbody>tr:last-child>td:first-child {
+    border-bottom-left-radius: 4px
+}
+
+.special-style table.tB>tbody>tr:last-child>td:last-child {
+    border-bottom-right-radius: 4px
+}
+
+.special-style table.tB>tbody>tr:nth-child(odd) {
+    background: #F5F5F5
+}
+
+.special-style table.tB>tbody>tr>td {
+    border-right: solid 1px #999;
+    border-bottom: solid 1px #999;
+    padding: 0 4px;
+    text-align: center
+}
+
+.special-style span.special-symbol {
+    font-family: arial,tahoma,'\5b8b\4f53',sans-serif;
+    line-height: 1
+}
+
+.special-style span.dI {
+    display: inline-block
+}
+
+.special-style span.pA {
+    position: absolute
+}
+
+.special-style span.pR {
+    position: relative
+}
+
+.special-style span.pS {
+    position: static
+}
+
+.special-style span.oH {
+    overflow: hidden
+}
