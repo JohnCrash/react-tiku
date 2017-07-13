@@ -12,6 +12,7 @@ import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 import TkLogin from './tklogin';
 import TkLink from './tklink';
+import TkHelp from './tkhelp';
 
 const warningColor = "#D50000";
 const greenColor = "#1B5E20";
@@ -44,7 +45,8 @@ class TkEditor extends Component{
 			editIndex:-1,			
 			openDialog:false,
 			userName:'',
-			openRequestDialog:false
+			openRequestDialog:false,
+			openHelp:false
 		}
 	}
 	//弹出一个错误条
@@ -375,6 +377,12 @@ class TkEditor extends Component{
             openRequestDialog:false
         });        
     }	
+	handleHelp(){
+		this.setState({openHelp:true});
+	}
+	handleCloseHelp(){
+		this.setState({openHelp:false});
+	}
 	render(){
 		return (
 			<div>
@@ -389,7 +397,8 @@ class TkEditor extends Component{
 				onReturnBrowser={this.handleReturnBrowser.bind(this)}
 				onRemoveIgnore={this.handleRemoveIgnore.bind(this)}
 				userName = {this.state.userName}
-				onLogout={this.handleLogout.bind(this)}/>
+				onLogout={this.handleLogout.bind(this)}
+				onHelp={this.handleHelp.bind(this)}/>
 				<TkNavDrawer ref={(drawer)=>{this.drawer = drawer}} 
 					onSelectUnit={this.handleSelectUnit.bind(this)}
 					messageBar={this.messageBar.bind(this)}/>
@@ -431,7 +440,8 @@ class TkEditor extends Component{
 					open={this.state.openRequestDialog}>
 					<p>另一个用户正在请求使用设备'{TkLink.mac}'</p>
 					<p>是否将设备借给该用户使用?</p>
-				</Dialog>  				
+				</Dialog>  
+				<TkHelp open={this.state.openHelp} onClose={this.handleCloseHelp.bind(this)}/>
 			</div>
 		);
 	}

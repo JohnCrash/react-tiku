@@ -11,6 +11,7 @@ import TkAdd from 'material-ui/svg-icons/content/add';
 import TkReturn from 'material-ui/svg-icons/content/reply';
 import TkDelete from 'material-ui/svg-icons/action/delete';
 import TkLogout from 'material-ui/svg-icons/social/people-outline';
+import TkHelp from 'material-ui/svg-icons/action/help';
 
 import TkLinkPhoneDialog from './tklinkphone';
 import TkLink from './tklink';
@@ -69,6 +70,9 @@ class TkToolBar extends Component{
   logout(){
     this.props.onLogout();
   }
+  help(){
+    this.props.onHelp();
+  }
 	render(){
 		return (
 			<Toolbar style={{backgroundColor:'#00BCD4'}}>
@@ -79,6 +83,9 @@ class TkToolBar extends Component{
           <ToolbarTitle text={'题库编辑器'} style={{color:'#FFFFFF'}}/>
         </ToolbarGroup>		        
         <ToolbarGroup>
+          <IconButton tooltip={`帮助:${this.props.userName}`} onClick={this.help.bind(this)}>
+            <TkHelp  color='#FFFFFF'/>
+          </IconButton>            
           <IconButton tooltip={`登出:${this.props.userName}`} onClick={this.logout.bind(this)}>
             <TkLogout  color='#FFFFFF'/>
           </IconButton>          

@@ -3975,8 +3975,11 @@
 			 }
 			 /**
 			  * 处理数学公式
+			  * 数学公式使用$来表示，但是如果要输入一个纯粹的$，就需要做转义，在$符前加入\，\$就表示纯粹的$符
+			  * 我在公式处理前将全部\$转换为特殊符号-^-,处理完公式在将全部的特殊符号转换为$
 			  */
 			 {
+				text = text.replace(/\\\$/g,'-^-');
 				var isTeXInline     = /\$\$(.*)\$\$/g.test(text);
 				var isTeXLine       = /^\$\$(.*)\$\$$/.test(text);
 				var isTeXAddClass   = (isTeXLine)     ? " class=\"" + editormd.classNames.tex + "\"" : "";
@@ -4009,6 +4012,7 @@
 							return "<p class=\"" + editormd.classNames.tex + "\" asciimath=1>" + $2.replace(/\$/g, "") + "</p>";
 						});	
 					}
+					text = text.replace(/-\^-/g,'$');
 				}	
 			 }			
             var tocHTML = "<div class=\"markdown-toc editormd-markdown-toc\">" + text + "</div>";
